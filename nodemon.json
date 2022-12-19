@@ -1,0 +1,5 @@
+{
+    "ignore": ["node_modules", ".next"],
+    "watch":["./"],
+    "ext": "js json"
+}
