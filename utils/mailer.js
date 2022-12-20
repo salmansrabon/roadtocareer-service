@@ -1,9 +1,11 @@
 const { createTransport } = require("nodemailer");
 const { PASSWORD } = require("../config/db");
-const { brand, nodemailerUser, nodemailerPassword, baseURL } = require("../variables");
+const { brand, nodemailerUser, nodemailerPassword, baseURL, nodemailerHost, nodemailerPort } = require("../variables");
 
 const transporter = createTransport({
-  service:'gmail',
+  host:nodemailerHostt,
+  port:nodemailerPort,
+  secure:true,
   auth: {
     user: nodemailerUser,
     pass: nodemailerPassword,
