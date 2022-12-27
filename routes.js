@@ -40,8 +40,8 @@ privateRouter.get("/v1/student", studentsController.getStudent);
 privateRouter.get("/v1/students", studentsController.getAllStudents);
 privateRouter.post("/v1/student/:studentId/validate", studentsController.validateStudent);
 privateRouter.put("/v1/student/:studentId", studentsController.updateStudent);
+privateRouter.put("/v1/student/validate/:studentId", studentsController.validateStudent)
 privateRouter.delete("/v1/student/:id", studentsController.destroyStudent);
-
 
 privateRouter.get("/v1/payments/:studentId/:courseId", paymentController.getPayments);
 privateRouter.get("/v1/payments", paymentController.getAllPayments);
