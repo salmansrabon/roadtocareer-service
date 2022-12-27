@@ -46,7 +46,7 @@ const addStudent = async (req, res) => {
 const updateStudent = async (req, res) => {
   const { studentId } = req.params;
   let msg = " ";
-
+  let resp = {};
   if (req.body.isValid) {
     const st = await Student.findOne({ id: studentId });
     if (isEmpty(st)) {
@@ -58,7 +58,7 @@ const updateStudent = async (req, res) => {
     if (!st.isValid) {
       const user = await User.findOne({ id: studentId });
       if (!user.password) {
-        let validate = await validateStudent(req, res).catch((data) => {
+        let validate = await validateStudent(req, res).then(payload=>{resp=payload.data}).catch((data) => {
           throw customError({
             code: 404,
             message: data.message,
@@ -73,11 +73,12 @@ const updateStudent = async (req, res) => {
 
   res.status(200).send({
     message: "Student updated" + msg + "successfully",
-    data: student,
+    data: {...student, ...resp},
   });
 };
 
 const validateStudent = async (req, res) => {
+
   const { studentId } = req.params;
   const { name, courseId, email, isValid } = req.body;
 
