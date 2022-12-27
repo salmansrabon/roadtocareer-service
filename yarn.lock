@@ -2572,10 +2572,10 @@
   "resolved" "https://registry.npmjs.org/node-releases/-/node-releases-2.0.6.tgz"
   "version" "2.0.6"
 
-"nodemailer@^6.7.5":
-  "integrity" "sha512-EjYvSmHzekz6VNkNd12aUqAco+bOkRe3Of5jVhltqKhEsjw/y0PYPJfp83+s9Wzh1dspYAkUW/YNQ350NATbSQ=="
-  "resolved" "https://registry.npmjs.org/nodemailer/-/nodemailer-6.8.0.tgz"
-  "version" "6.8.0"
+"nodemailer@^4.7.0":
+  "integrity" "sha512-IludxDypFpYw4xpzKdMAozBSkzKHmNBvGanUREjJItgJ2NYcK/s8+PggVhj7c2yGFQykKsnnmv1+Aqo0ZfjHmw=="
+  "resolved" "https://registry.npmjs.org/nodemailer/-/nodemailer-4.7.0.tgz"
+  "version" "4.7.0"
 
 "nodemon@^2.0.15":
   "integrity" "sha512-Km2mWHKKY5GzRg6i1j5OxOHQtuvVsgskLfigG25yTtbyfRGn/GNvIbRyOf1PSCKJ2aT/58TiuUsuOU5UToVViw=="

@@ -3,17 +3,18 @@ const { PASSWORD } = require("../config/db");
 const { brand, nodemailerUser, nodemailerPassword, baseURL, nodemailerHost, nodemailerPort } = require("../variables");
 
 const transporter = createTransport({
-  service: 'gmail',
-  host:nodemailerHost,
-  port:nodemailerPort,
-  secure:true,
-  logger: true,
-  debug: true,
+  host: 'lxbd2.alpha.net.bd',
+  port: nodemailerPort,
+  secure: false,
   secureConnection: false,
   auth: {
     user: nodemailerUser,
-    pass: nodemailerPassword,
+    pass: nodemailerPassword
+
   },
+  tls: {
+    rejectUnAuthorized: true
+  }
 });
 
 const mailOptions = (data) => {
@@ -31,15 +32,15 @@ const mailOptions = (data) => {
     options.subject = `${brand} login credentials.`;
     options.html = `Dear ${name},<br/> Thank you so much again for the enrollment in ${courseTitle}. Your user id is <p style='font-weight:bold;'>${studentId}</p> and password is <p style='font-weight:bold;'>${password}</p>.Stay with Us.<br/><br/>Regards<br/>${brand}<br/>01686606909`;
   }
-  else if(type =="sendResetLink"){
-    const{pcToken} = data;
+  else if (type == "sendResetLink") {
+    const { pcToken } = data;
     options.subject = `${brand} reset link.`;
     options.html = `Dear ${name},<br/>Here you reset link for ${courseTitle}.<a href = "http://${baseURL}/reset-password/${pcToken}">Click here to reset your password</a><br/><br/>Regards<br/>${brand}<br/>01686606909`
   }
-  else if(type=="sendPayment"){
-    const {installmentNo, installmentAmount, paidAmount, discount, due} = data;
-    const dueM = due==0?"You have no due for":`Due amount is ${due} TK for`
-    const discountM = discount ==0?"": `Congratulation, you got a discount of ${discout} TK`
+  else if (type == "sendPayment") {
+    const { installmentNo, installmentAmount, paidAmount, discount, due } = data;
+    const dueM = due == 0 ? "You have no due for" : `Due amount is ${due} TK for`
+    const discountM = discount == 0 ? "" : `Congratulation, you got a discount of ${discout} TK`
     options.subject = `${brand} payment confirmation.`;
     options.html = `Dear ${name},<br/>
           Congratulations!
