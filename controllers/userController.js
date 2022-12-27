@@ -24,6 +24,7 @@ const signUp = async (req, res) => {
     package,
     role = "student",
   } = req.body;
+  let raw_pass= password;
   email = email.toLowerCase();
   let response = {};
   let id = "";
@@ -99,6 +100,7 @@ const signUp = async (req, res) => {
     let user_count = "0" + ((users?.length || 0) + 1);
     id = role + new Date().getFullYear() + user_count;
     const salt = await bcrypt.genSalt(10);
+    // console.log(password)
     password = await bcrypt.hash(password, salt);
   }
 
@@ -111,6 +113,7 @@ const signUp = async (req, res) => {
   response.user = {
     id: new_user.id,
     email: new_user.email,
+    password:raw_pass,
     role: new_user.role,
   };
 

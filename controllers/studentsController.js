@@ -107,6 +107,7 @@ const validateStudent = async (req, res) => {
 
   res.status(200).send({
     message: "Student validated successfully",
+    data:{name, email, studentId, password}
   });
 };
 
