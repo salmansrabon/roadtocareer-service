@@ -24,5 +24,7 @@ module.exports = {
   dbPassword,
   nodemailerUser,
   nodemailerPassword,
+  nodemailerHost,
+  nodemailerPort,
   baseUrl
 };
