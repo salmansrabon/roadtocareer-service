@@ -24,12 +24,12 @@ const signUp = async (req, res) => {
     package,
     role = "student",
   } = req.body;
-  let raw_pass= password;
+  let raw_pass = password;
   email = email.toLowerCase();
   let response = {};
   let id = "";
   if (role !== "admin") {
-  validator(req.body, "signup");
+    validator(req.body, "signup");
 
     const course = await Course.findOne({ id: courseId });
     if (isEmpty(course)) {
@@ -47,9 +47,15 @@ const signUp = async (req, res) => {
       });
     }
 
-    const students = await Student.findAll({ courseId: courseId }, { attributes: ["id"] }, 1, 1, {
-      order: [["id", "DESC"]],
-    });
+    const students = await Student.findAll(
+      { courseId: courseId, batch: course.batch },
+      { attributes: ["id"] },
+      1,
+      1,
+      {
+        order: [["createdAt", "DESC"]],
+      }
+    );
 
     let count = 0;
     if (students.count == 0) {
@@ -58,7 +64,13 @@ const signUp = async (req, res) => {
       count = Number(students.rows[0].id.split("0").pop()) + 1;
     }
 
-    id = course.courseInitial.toUpperCase() + "0" + course.batch + "0" + count;
+    id =
+      course.courseInitial.toUpperCase() +
+      "0" +
+      course.batch +
+      name.split(" ").reduce((prev, cur) => prev + cur[0].toUpperCase(), "") +
+      "0" +
+      count;
 
     password = "";
 
@@ -113,7 +125,7 @@ const signUp = async (req, res) => {
   response.user = {
     id: new_user.id,
     email: new_user.email,
-    password:raw_pass,
+    password: raw_pass,
     role: new_user.role,
   };
 
@@ -128,12 +140,11 @@ const signIn = async (req, res) => {
   let user = "";
   let isValid = true;
   if (isEmail(req.body.email.toLowerCase())) {
-    user = await User.findOne({ email: req.body.email.toLowerCase(), role:'admin'});
+    user = await User.findOne({ email: req.body.email.toLowerCase(), role: "admin" });
     if (isEmpty(user))
-    user = await User.findOne({ email: req.body.email.toLowerCase(), role:'teacher'});
-
+      user = await User.findOne({ email: req.body.email.toLowerCase(), role: "teacher" });
   } else {
-    user = await User.findOne({ id: req.body.email.toUpperCase()});
+    user = await User.findOne({ id: req.body.email.toUpperCase() });
     const student = await Student.findOne({ id: req.body.email.toUpperCase() });
     isValid = (student?.isValid || false) && (student?.isEnrolled || false);
   }
@@ -177,19 +188,19 @@ const signIn = async (req, res) => {
 
 const changePassword = async (req, res) => {
   const id = req.body.id.toUpperCase();
-  const reset = req.body?.reset ??false;
-  let user = await User.findOne({id});
+  const reset = req.body?.reset ?? false;
+  let user = await User.findOne({ id });
   if (isEmpty(user)) {
     throw customError({
       code: 403,
       message: "User not found",
     });
   }
-  
+
   const salt = await bcrypt.genSalt(10);
-  if(!reset){
-    const passMatch =  await bcrypt.compare(req.body.curPassword, user.password);
-    if(!passMatch){
+  if (!reset) {
+    const passMatch = await bcrypt.compare(req.body.curPassword, user.password);
+    if (!passMatch) {
       throw customError({
         code: 403,
         message: "Current password is wrong.",
@@ -221,7 +232,7 @@ const resetPassword = async (req, res) => {
     });
   }
   req.body.id = user.id;
-  req.body.reset =true;
+  req.body.reset = true;
   let response = await changePassword(req, res).catch((data) => {
     throw customError({
       code: 404,
@@ -303,10 +314,10 @@ const isAuthenticated = async (req, res) => {
     message: "User is authenticated",
   });
 };
-const destroyUser= async (req, res) => {
-  const {id} = req.params;
+const destroyUser = async (req, res) => {
+  const { id } = req.params;
   const user = await User.findOne({ id });
- 
+
   if (isEmpty(user)) {
     throw customError({
       code: 404,
@@ -314,11 +325,11 @@ const destroyUser= async (req, res) => {
     });
   }
 
-  const response = await User.destroy({id});
+  const response = await User.destroy({ id });
   res.status(201).send({
     message: "User deleted sucessfully",
   });
-}
+};
 module.exports = {
   signUp,
   signIn,
@@ -327,5 +338,5 @@ module.exports = {
   sendResetLink,
   isAuthenticated,
   isAuthenticPCToken,
-  destroyUser
+  destroyUser,
 };
