@@ -6,8 +6,8 @@ const { brand, nodemailerUser, nodemailerPassword, baseURL, nodemailerPort, base
 const transporter = createTransport({
   host: nodemailerHost,
   port: nodemailerPort,
-  secure: false,
-  secureConnection: false,
+  secure: true,
+  secureConnection: true,
   auth: {
     user: nodemailerUser,
     pass: nodemailerPassword
@@ -27,11 +27,11 @@ const mailOptions = (data) => {
 
   if (type === "enroll") {
     options.subject = `${brand} enrollment confirmation`;
-    options.html = `Dear ${name},<br>You have enrolled successfully for the course of ${courseTitle} at batch ${batch}. We will send you the payment details very soon and contact you regarding payment.&nbsp;<br><br>Thank you so much again for the enrollment.&nbsp;<br>Stay with Us.<br>Regards ${brand}<br>Whatsapp: 01686606909<br>Fb Group: https://www.facebook.com/groups/roadtosdet`;
+    options.html = `Dear ${name},<br>You have enrolled successfully for the course of ${courseTitle} at batch ${batch}. We will send you the payment details very soon and contact you regarding payment.&nbsp;<br><br>Stay with Us.<br>Regards<br>${brand}<br>Whatsapp: 01686606909<br>Fb Group: https://www.facebook.com/groups/roadtosdet`;
   } else if (type == "sendPass") {
     const { studentId, password } = data;
     options.subject = `${brand} login credentials.`;
-    options.html = `Dear ${name},<br>Thank you so much for completing the enrollment in ${courseTitle}.&nbsp;<br>Your user id is <strong>${studentId}</strong> and password is&nbsp;<strong>${password}</strong>.<br>Click <a href="https://www.roadtocareer.net/signin" rel="noopener noreferrer" target="_blank">here for login</a>.<br><br>Regards<br>${brand}<br>Whatsapp: 01686606909<br>Fb Group: https://www.facebook.com/groups/roadtosdet`;
+    options.html = `Dear ${name},<br>Thank you so much for completing the enrollment in ${courseTitle}.&nbsp;<br>Your user id is <strong>${studentId}</strong> and password is&nbsp;<strong>${password}</strong>.<br>Click <a href="https://www.roadtocareer.net/login" rel="noopener noreferrer" target="_blank">here for login</a>.<br><br>Regards<br>${brand}<br>Whatsapp: 01686606909<br>Fb Group: https://www.facebook.com/groups/roadtosdet`;
   }
   else if (type == "sendResetLink") {
     const { pcToken } = data;
