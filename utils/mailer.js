@@ -6,8 +6,8 @@ const { brand, nodemailerUser, nodemailerPassword, baseURL, nodemailerPort, base
 const transporter = createTransport({
   host: nodemailerHost,
   port: nodemailerPort,
-  secure: true,
-  secureConnection: true,
+  secure: false,
+  secureConnection: false,
   auth: {
     user: nodemailerUser,
     pass: nodemailerPassword
