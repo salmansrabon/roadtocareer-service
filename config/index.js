@@ -2,6 +2,7 @@ const { Sequelize, DataTypes } = require("sequelize");
 const { DB, USER, PASSWORD, HOST, dialect, pool } = require("./db");
 const { logger } = require("../utils");
 
+
 const sequelize = new Sequelize(DB, USER, PASSWORD, {
   host: HOST,
   dialect: dialect,

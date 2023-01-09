@@ -39,7 +39,7 @@ const studentsSchema = sequelize.define("students", {
     allowNull:true
   },
   experience: {
-    type: DataTypes.INTEGER,
+    type: DataTypes.STRING,
     allowNull:true
   },
   company: {

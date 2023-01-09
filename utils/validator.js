@@ -32,7 +32,7 @@ const signupSchema = Joi.object({
     then: Joi.required(),
   }),
   passingYear:Joi.string().allow(""),
-  experience: Joi.number().allow(""),
+  experience: Joi.string().allow(""),
   company: Joi.string().allow(""),
   courseId: Joi.string().when("role", { //.uuid()
     not: Joi.exist(),
