@@ -47,6 +47,14 @@ const quizesSchema = sequelize.define("quizes", {
     type: DataTypes.DATE,
     allowNull: false,
   },
+  maxQues:{
+    type:DataTypes.INTEGER,
+    allowNull:false,
+  },
+  totalTime:{
+    type:DataTypes.INTEGER,
+    allowNull:false
+  }
 });
 
 const findOne = async (filters = {}, attributes = null) => {

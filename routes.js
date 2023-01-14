@@ -42,6 +42,8 @@ privateRouter.post("/v1/student/:studentId/validate", studentsController.validat
 privateRouter.put("/v1/student/:studentId", studentsController.updateStudent);
 privateRouter.put("/v1/student/validate/:studentId", studentsController.validateStudent)
 privateRouter.delete("/v1/student/:id", studentsController.destroyStudent);
+privateRouter.put("/v1/student/attendance/:id", studentsController.addAttandence);
+
 
 privateRouter.get("/v1/payments/:studentId/:courseId", paymentController.getPayments);
 privateRouter.get("/v1/payments", paymentController.getAllPayments);

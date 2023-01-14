@@ -61,10 +61,10 @@ const studentsSchema = sequelize.define("students", {
       isEmail: true,
     },
   },
-  attendance: {
-    type: DataTypes.INTEGER,
+  attendances: {
+    type: DataTypes.JSON, 
     allowNull: true,
-    defaultValue: 0,
+    defaultValue: [],//[date]
   },
   marks:{
     type:DataTypes.JSON,
@@ -81,15 +81,16 @@ const studentsSchema = sequelize.define("students", {
     allowNull: false,
     defaultValue: false,
   },
-  // {quizid:[answer:{}],}
   assignmentAnswers:{
     type:DataTypes.JSON,
     allowNull:true,
+    defaultValue:[]
     
   },
   quizAnswers:{
     type:DataTypes.JSON,
     allowNull:true,
+    defaultValue:{} // {quizid:{startTime:9.30pm , marks:15, answers: [{questionIndex:1, answer: "Not given"},{questionIndex:5, answer: "True"} ]} ,anotherQuizId:{...}}
     
   }
 });
