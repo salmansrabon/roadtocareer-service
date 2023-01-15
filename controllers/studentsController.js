@@ -21,16 +21,27 @@ const getAllStudents = async (req, res) => {
 const getStudent = async (req, res) => {
   const { id } = req.query;
   const student = await Student.findOne({ id });
+  const date = new Date();
   if (isEmpty(student)) {
     throw customError({
       code: 404,
       message: "Student not found",
     });
   }
-
+  req.params.id = id;
+  req.body.date = date;
+  let checkValidDate = false;
+  let message = "";
+  const checkDate = await checkAttendanceDate(req, res)
+    .then(async (data) => {
+      checkValidDate = data.state;
+      message = data.message;
+      // console.log(data)
+    })
+    .catch((err) => console.log("Error Occured."));
   res.status(200).send({
     message: "Student fetched successfully",
-    data: student,
+    data: { ...student.dataValues, checkValidDate, message },
   });
 };
 
@@ -130,10 +141,10 @@ const destroyStudent = async (req, res) => {
     message: "Student deleted sucessfully",
   });
 };
-const addAttandence = async (req, res) => {
+const checkAttendanceDate = async (req, res) => {
   const { id } = req.params;
-  const date = req.body?.date ?? new Date();
-  const student = await Student.findOne({ id });
+  const date = new Date();
+  const student = req.body?.student ?? (await Student.findOne({ id }));
   if (isEmpty(student)) {
     throw customError({
       code: 404,
@@ -147,37 +158,117 @@ const addAttandence = async (req, res) => {
       message: "Course Not Found!",
     });
   }
-
+  let attendances = JSON.parse(student?.attendances ?? []);
   let curDay = date.toLocaleDateString("default", { weekday: "long" });
-  console.log(curDay)
-  console.log(date.getTime() >= course.orientationDate.getTime())
+  // console.log(curDay)
+  // console.log(date.getTime() >= course.orientationDate.getTime())
   if (date.getTime() >= course.orientationDate.getTime() && course.classDays.includes(curDay)) {
     let cTime = new Date();
     let [hour, minute] = JSON.parse(course.classTime).start.split(":");
     cTime.setHours(hour, minute);
-    if (date.getTime() >= cTime.getTime() && date.getTime() <= cTime.getTime() + 90 * 60 * 1000) {
-      console.log(JSON.parse(student.attendances));
-      let attendances = [...(JSON.parse(student.attendances) ?? []), date.getTime()];
-      console.log(attendances);
-      const response = await Student.update(id, { attendances });
-
-      // console.log(student.attendances)
-      res.status(201).send({
+    if (date.getDate() == new Date(attendances[attendances.length - 1] ?? 500).getDate()) {
+      return {
+        message: "You have already given the attendance.",
+        state: false,
+      };
+    } else if (
+      date.getTime() >= cTime.getTime() &&
+      date.getTime() <= cTime.getTime() + 90 * 60 * 1000
+    ) {
+      // console.log(JSON.parse(student.attendances));
+      return {
         message: "Attenndance has been added successfully.",
-      });
+        state: true,
+      };
     } else {
-      throw customError({
-        code: 404,
+      return {
         message: "Ops, you can not add attendance now.",
-      });
+        state: false,
+      };
     }
   } else {
-    throw customError({
-      code: 404,
+    return {
       message: "Today is not the class day or orientation still not start.",
-    });
+      state: false,
+    };
   }
 };
+const addAttandence = async (req, res) => {
+  const { id } = req.params;
+  const date = new Date();
+  const student = await Student.findOne({ id });
+  if (isEmpty(student)) {
+    throw customError({
+      code: 404,
+      message: "Student not found",
+    });
+  }
+
+  req.body.student = student;
+
+  const checkDate = await checkAttendanceDate(req, res)
+    .then(async (data) => {
+      // console.log(data);
+      if (data.state) {
+        let attendances = [...(JSON.parse(student.attendances) ?? []), date.getTime()];
+        // console.log(attendances);
+        const response = await Student.update(id, { attendances })
+          .then((payload) => {
+            res.status(201).send({
+              data: {
+                message: "Attenndance has been added successfully.",
+                state: true,
+              },
+            });
+          })
+          .catch((err) => console.log(err));
+
+        // console.log(student.attendances)
+      } else {
+        res.status(403).send({
+          data: {
+            message: data.message,
+            state: false,
+          },
+        });
+      }
+    })
+    .catch((err) => {
+      console.log(err);
+      throw customError({
+        code: 404,
+        message: "Sorry! Error occured..",
+      });
+    });
+};
+
+const addAttandence_Admin = async (req, res) => {
+  const { id } = req.params;
+  const date = req.body?.date ? new Date(req.body.date) : new Date();
+  const student = await Student.findOne({ id });
+  if (isEmpty(student)) {
+    throw customError({
+      code: 404,
+      message: "Student not found",
+    });
+  }
+
+  req.body.student = student;
+
+  let attendances = [...(JSON.parse(student.attendances) ?? []), date.getTime()];
+  // console.log(attendances);
+  const response = await Student.update(id, { attendances });
+
+  res.status(201).send({
+    data: {
+      message: "Attenndance has been added successfully.",
+      state: true,
+    },
+  });
+
+  // console.log(student.attendances)
+};
+
 module.exports = {
   getAllStudents,
   getStudent,
@@ -186,4 +277,6 @@ module.exports = {
   validateStudent,
   destroyStudent,
   addAttandence,
+  checkAttendanceDate,
+  addAttandence_Admin
 };

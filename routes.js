@@ -42,8 +42,9 @@ privateRouter.post("/v1/student/:studentId/validate", studentsController.validat
 privateRouter.put("/v1/student/:studentId", studentsController.updateStudent);
 privateRouter.put("/v1/student/validate/:studentId", studentsController.validateStudent)
 privateRouter.delete("/v1/student/:id", studentsController.destroyStudent);
+privateRouter.get("/v1/student/attendance/:id", studentsController.checkAttendanceDate);
 privateRouter.put("/v1/student/attendance/:id", studentsController.addAttandence);
-
+privateRouter.put("/v1/admin/addAttendance365/:id", studentsController.addAttandence_Admin)
 
 privateRouter.get("/v1/payments/:studentId/:courseId", paymentController.getPayments);
 privateRouter.get("/v1/payments", paymentController.getAllPayments);
@@ -81,6 +82,10 @@ privateRouter.delete("/v1/assignment/:id", assignmentsController.destroyAssignme
 
 privateRouter.get("/v1/quizes", quizesController.getAllQuizes);
 privateRouter.get("/v1/quizes/:id", quizesController.getQuiz);
+privateRouter.get("/v1/quizes/getRandomQuestions/:id", quizesController.getRandQuestions)
+privateRouter.get("/v1/quizes/getQuestions/:id", quizesController.getQuestions)
+privateRouter.get("/v1/quizes/getSecretAnswers365/:id", quizesController.getAnswers)
+
 privateRouter.post("/v1/quizes", quizesController.addQuiz);
 privateRouter.put("/v1/quizes/:id", quizesController.editQuiz);
 privateRouter.delete("/v1/quiz/:id", quizesController.destroyQuiz);

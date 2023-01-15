@@ -51,11 +51,118 @@ const getQuiz = async (req, res) => {
   });
 };
 
-const getAllQuizes = async (req, res) => {
-  let {id, role, ...filters} = req.query;
+const getRandQuestions = async (req, res) => {
+  // console.log(req.params)
+  const { id } = req.params;
+  const quiz = await quizes.findOne({ id });
+  if (isEmpty(quiz)) {
+    throw customError({
+      code: 404,
+      message: "quiz not found",
+    });
+  }
+  let questions = JSON.parse(quiz.questions);
+  let quids = Object.keys(questions);
+  let randQuesId = [];
+  let randQuestions = {};
+  let maxQ = quids.length < quiz.maxQues ? quids.length : quiz.maxQues;
+  let r = "";
+  // console.log(maxQ)
+  try {
+    while (randQuesId.length < maxQ) {
+      r = quids[Math.floor(Math.random() * quids.length)];
+      if (randQuesId.indexOf(r) === -1) randQuesId.push(r);
+    }
 
-  if (role == 'student'){
-    const student = await Student.findOne({id});
+    for (let quid of randQuesId) {
+      randQuestions[quid] = questions[quid];
+    }
+  } catch (err) {
+    console.log(err);
+    throw customError({
+      name: "Error404",
+      code: 404,
+      message: "CError",
+    });
+  }
+  // console.log(randQuesId)
+  res.status(200).send({
+    message: "quiz fetched successfully",
+    data: randQuestions,
+  });
+};
+
+const getQuestions = async (req, res) => {
+  // console.log(req.params)
+  const { id } = req.params;
+  const { quids } = req.body;
+  const quiz = await quizes.findOne({ id });
+  if (isEmpty(quiz)) {
+    throw customError({
+      code: 404,
+      message: "quiz not found",
+    });
+  }
+  let questions = JSON.parse(quiz.questions);
+  let randQuestions = {};
+  // console.log(maxQ)
+  try {
+    for (let quid of quids ) {
+      randQuestions[quid] = questions[quid];
+    }
+  } catch (err) {
+    console.log(err);
+    throw customError({
+      name: "Error404",
+      code: 404,
+      message: "CError",
+    });
+  }
+  // console.log(randQuesId)
+  res.status(200).send({
+    message: "quiz fetched successfully",
+    data: randQuestions,
+  });
+};
+
+const getAnswers = async (req, res) => {
+  // console.log(req.params)
+  const { id } = req.params;
+  const { quids } = req.body;
+  const quiz = await quizes.findOne({ id });
+  if (isEmpty(quiz)) {
+    throw customError({
+      code: 404,
+      message: "quiz not found",
+    });
+  }
+  let answers = JSON.parse(quiz.answers);
+  let randAnswers = {};
+  // console.log(maxQ)
+  try {
+    for (let quid of quids ) {
+      randAnswers[quid] = answers[quid];
+    }
+  } catch (err) {
+    console.log(err);
+    throw customError({
+      name: "Error404",
+      code: 404,
+      message: "CError",
+    });
+  }
+  // console.log(randQuesId)
+  res.status(200).send({
+    message: "quiz fetched successfully",
+    data: randAnswers,
+  });
+};
+
+const getAllQuizes = async (req, res) => {
+  let { id, role, ...filters } = req.query;
+
+  if (role == "student") {
+    const student = await Student.findOne({ id });
     if (isEmpty(student)) {
       throw customError({
         code: 404,
@@ -64,17 +171,18 @@ const getAllQuizes = async (req, res) => {
     }
     filters.courseId = student.courseId;
 
-    const package = await packages.findOne({courseId: student.courseId, packageName:student.package });
+    const package = await packages.findOne({
+      courseId: student.courseId,
+      packageName: student.package,
+    });
     if (isEmpty(package)) {
       throw customError({
         code: 404,
         message: "Package not found",
       });
     }
-    filters.packageId = package.id
-
+    filters.packageId = package.id;
   }
-
 
   const response = await quizes.findAll({ ...filters });
 
@@ -118,10 +226,10 @@ const editQuiz = async (req, res) => {
   });
 };
 
-const destroyQuiz= async (req, res) => {
-  const {id} = req.params;
+const destroyQuiz = async (req, res) => {
+  const { id } = req.params;
   const Quiz = await quizes.findOne({ id });
- 
+
   if (isEmpty(Quiz)) {
     throw customError({
       code: 404,
@@ -129,11 +237,11 @@ const destroyQuiz= async (req, res) => {
     });
   }
 
-  const response = await quizes.destroy({id});
+  const response = await quizes.destroy({ id });
   res.status(201).send({
     message: "Quize deleted sucessfully",
   });
-}
+};
 module.exports = {
   getPublicQuiz,
   getPublicQuizes,
@@ -141,5 +249,8 @@ module.exports = {
   getAllQuizes,
   addQuiz,
   editQuiz,
-  destroyQuiz
+  destroyQuiz,
+  getRandQuestions,
+  getQuestions,
+  getAnswers,
 };

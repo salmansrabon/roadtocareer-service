@@ -13,6 +13,7 @@ const getToken = (authorization) => {
 
 const withAuth = async (req, res, next) => {
   const authorization = req.header("authorization");
+  // console.log(authorization)
   const token = getToken(authorization);
   const decodedToken = jwt.verify(token, variables.jwtSecret);
   req.user = decodedToken;

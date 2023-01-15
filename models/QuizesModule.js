@@ -58,7 +58,8 @@ const quizesSchema = sequelize.define("quizes", {
 });
 
 const findOne = async (filters = {}, attributes = null) => {
-  const response = await quizsSchema.findOne({
+  // console.log(filters)
+  const response = await quizesSchema.findOne({
     where: { ...filters },
     ...(attributes && { attributes }),
   });
