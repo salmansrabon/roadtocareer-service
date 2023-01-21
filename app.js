@@ -5,8 +5,8 @@ const logger = require("morgan");
 const Logger = require("./utils/logger");
 
 const { appPort } = require("./variables");
-const { publicRouter, privateRouter } = require("./routes");
-const { withAuth, errorHandler } = require("./middlewires");
+const { publicRouter, privateRouter, adminAccessRouter } = require("./routes");
+const { auth, errorHandler, withAdminAuth } = require("./middlewires");
 
 const app = express();
 
@@ -20,7 +20,8 @@ app.use(express.urlencoded({ extended: true }));
 
 // routers
 app.use(publicRouter);
-app.use(withAuth, privateRouter);
+app.use(auth.withAuth, privateRouter);
+app.use(auth.withAdminAuth,adminAccessRouter )
 
 // error handler
 app.use(errorHandler);

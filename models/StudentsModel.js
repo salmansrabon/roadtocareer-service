@@ -90,7 +90,7 @@ const studentsSchema = sequelize.define("students", {
   quizAnswers:{
     type:DataTypes.JSON,
     allowNull:true,
-    defaultValue:{} // {quizid:{startTime:9.30pm , marks:15, answers: [{questionIndex:1, answer: "Not given"},{questionIndex:5, answer: "True"} ]} ,anotherQuizId:{...}}
+    defaultValue:{} // {quizid:{startTime:9.30pm , marks:15, answers: [{questionId1:"Not given",questionId2:"True"} ]} ,anotherQuizId:{...}}
     
   }
 });

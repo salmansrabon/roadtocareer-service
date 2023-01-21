@@ -1,5 +1,6 @@
 const publicRouter = require("express").Router();
 const privateRouter = require("express").Router();
+const adminAccessRouter = require("express").Router();
 const {
   userController,
   studentsController,
@@ -102,4 +103,5 @@ privateRouter.delete("/v1/teacher/:id", teachersController.destroyTeacher);
 module.exports = {
   publicRouter,
   privateRouter,
+  adminAccessRouter,
 };

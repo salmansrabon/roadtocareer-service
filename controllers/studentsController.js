@@ -19,7 +19,9 @@ const getAllStudents = async (req, res) => {
 };
 
 const getStudent = async (req, res) => {
+  console.log('hered')
   const { id } = req.query;
+  console.log(id)
   const student = await Student.findOne({ id });
   const date = new Date();
   if (isEmpty(student)) {
@@ -245,6 +247,7 @@ const addAttandence = async (req, res) => {
 const addAttandence_Admin = async (req, res) => {
   const { id } = req.params;
   const date = req.body?.date ? new Date(req.body.date) : new Date();
+  // console.log(date)
   const student = await Student.findOne({ id });
   if (isEmpty(student)) {
     throw customError({
@@ -268,7 +271,17 @@ const addAttandence_Admin = async (req, res) => {
 
   // console.log(student.attendances)
 };
-
+const addQuizAnswer = async (req, res) => {
+  const { id } = req.params;
+  const student = await Student.findOne({ id });
+  if (isEmpty(student)) {
+    throw customError({
+      code: 404,
+      message: "Student not found",
+    });
+  }
+  
+}
 module.exports = {
   getAllStudents,
   getStudent,

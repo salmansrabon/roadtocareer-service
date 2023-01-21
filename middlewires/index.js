@@ -1,4 +1,4 @@
 module.exports = {
-  withAuth: require("./withAuth"),
+  auth: require("./withAuth"),
   errorHandler: require("./errorHandler"),
 };

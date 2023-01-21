@@ -1,7 +1,8 @@
 const { v4: uuidV4 } = require("uuid");
 const { isEmpty } = require("lodash");
-const { quizes } = require("../models");
+const { quizes, Student, Course } = require("../models");
 const { validator, customError } = require("../utils");
+const { object } = require("joi");
 
 // Public Controllers
 const getPublicQuiz = async (req, res) => {
@@ -50,7 +51,69 @@ const getQuiz = async (req, res) => {
     data: response,
   });
 };
+const checkQuizDate = async (req, res) => {
+  const { id } = req.params;
+  const { studentId } = req.body;
+  const date = new Date();
+  const student = await Student.findOne({ id: studentId });
+  if (isEmpty(student)) {
+    throw customError({
+      code: 404,
+      message: "Student not found",
+    });
+  }
+  const quiz = await quizes.findOne({ id });
+  if (isEmpty(quiz)) {
+    throw customError({
+      code: 404,
+      message: "Course Not Found!",
+    });
+  }
+  let quizStartDate = new Date(quiz.quizStartDate);
+  let quizEndDate = new Date(quiz.quizEndDate);
 
+  if (date.getTime() >= quizStartDate.getTime) {
+    if (date.getTime() <= quizEndDate.getTime()) {
+      let stQuiz = JSON.parse(student.quizAnswers);
+      if (!(id in stQuiz)) {
+        let stQuizTime = stQuiz.id.startTime;
+        let quids = Object.keys(stQuiz.id.answers);
+        let stDateTime = new Date();
+        let [hour, minute] = stQuizTime.split(":");
+        stDateTime.setHours(hour, minute);
+        if (stDateTime.getTime() + quiz.totalTime * 60 * 100 <= date.getTime()) {
+          return {
+            message: "Quiz is running and studetn has already started the quiz.",
+            state: 2,
+            quids: quids,
+          };
+        } else {
+          // console.log(JSON.parse(student.attendances));
+          return {
+            message: "Student quiz time has been finished.",
+            state: 3,
+            quids: quids,
+          };
+        }
+      } else {
+        return {
+          message: "Quiz is open and student can start the quiz.",
+          state: 1,
+        };
+      }
+    } else {
+      return {
+        message: "Quiz allready ended at " + quizStartDate,
+        state: 4,
+      };
+    }
+  } else {
+    return {
+      message: "Quiz will start at " + quizStartDate,
+      state: 0,
+    };
+  }
+};
 const getRandQuestions = async (req, res) => {
   // console.log(req.params)
   const { id } = req.params;
@@ -61,35 +124,79 @@ const getRandQuestions = async (req, res) => {
       message: "quiz not found",
     });
   }
+  let checkDate = await checkQuizDate(req, res);
   let questions = JSON.parse(quiz.questions);
-  let quids = Object.keys(questions);
-  let randQuesId = [];
-  let randQuestions = {};
-  let maxQ = quids.length < quiz.maxQues ? quids.length : quiz.maxQues;
-  let r = "";
-  // console.log(maxQ)
-  try {
-    while (randQuesId.length < maxQ) {
-      r = quids[Math.floor(Math.random() * quids.length)];
-      if (randQuesId.indexOf(r) === -1) randQuesId.push(r);
-    }
+  if (checkDate.state == 1) {
+    let quids = Object.keys(questions);
+    let randQuesId = [];
+    let randQuestions = {};
+    let maxQ = quids.length < quiz.maxQues ? quids.length : quiz.maxQues;
+    let r = "";
+    // console.log(maxQ)
+    try {
+      while (randQuesId.length < maxQ) {
+        r = quids[Math.floor(Math.random() * quids.length)];
+        if (randQuesId.indexOf(r) === -1) randQuesId.push(r);
+      }
 
-    for (let quid of randQuesId) {
+      for (let quid of randQuesId) {
+        randQuestions[quid] = questions[quid];
+      }
+    } catch (err) {
+      console.log(err);
+      throw customError({
+        name: "Error404",
+        code: 404,
+        message: "CError",
+      });
+    }
+    // console.log(randQuesId)
+    res.status(200).send({
+      message: "quiz fetched successfully",
+      data: { randQuestions },
+    });
+  } else if (checkDate.state == 2) {
+    let quids = checkDate.quids;
+    let randQuestions = {};
+    for (let quid of quids) {
       randQuestions[quid] = questions[quid];
     }
-  } catch (err) {
-    console.log(err);
-    throw customError({
-      name: "Error404",
-      code: 404,
-      message: "CError",
+    res.status(200).send({
+      data: {
+        message: checkDate.message,
+        state: checkDate.state,
+        randQuestions,
+      },
+    });
+  } else if (checkDate.state == 3) {
+    let answers = JSON.parse(quiz.answers);
+    let randAnswers = {};
+    // console.log(maxQ)
+    try {
+      for (let quid of quids) {
+        randAnswers[quid] = answers[quid];
+      }
+    } catch (err) {
+      console.log(err);
+      throw customError({
+        name: "Error404",
+        code: 404,
+        message: "CError",
+      });
+    }
+    // console.log(randQuesId)
+    res.status(200).send({
+      message: "quiz fetched successfully",
+      data: randAnswers,
+    });
+  } else {
+    res.status(403).send({
+      data: {
+        message: checkDate.message,
+        state: checkDate.state,
+      },
     });
   }
-  // console.log(randQuesId)
-  res.status(200).send({
-    message: "quiz fetched successfully",
-    data: randQuestions,
-  });
 };
 
 const getQuestions = async (req, res) => {
@@ -107,7 +214,7 @@ const getQuestions = async (req, res) => {
   let randQuestions = {};
   // console.log(maxQ)
   try {
-    for (let quid of quids ) {
+    for (let quid of quids) {
       randQuestions[quid] = questions[quid];
     }
   } catch (err) {
@@ -140,7 +247,7 @@ const getAnswers = async (req, res) => {
   let randAnswers = {};
   // console.log(maxQ)
   try {
-    for (let quid of quids ) {
+    for (let quid of quids) {
       randAnswers[quid] = answers[quid];
     }
   } catch (err) {
@@ -242,6 +349,7 @@ const destroyQuiz = async (req, res) => {
     message: "Quize deleted sucessfully",
   });
 };
+
 module.exports = {
   getPublicQuiz,
   getPublicQuizes,
