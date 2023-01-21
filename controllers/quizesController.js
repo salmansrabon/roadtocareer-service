@@ -71,45 +71,53 @@ const checkQuizDate = async (req, res) => {
   }
   let quizStartDate = new Date(quiz.quizStartDate);
   let quizEndDate = new Date(quiz.quizEndDate);
+  console.log(quizStartDate);
 
-  if (date.getTime() >= quizStartDate.getTime) {
-    if (date.getTime() <= quizEndDate.getTime()) {
-      let stQuiz = JSON.parse(student.quizAnswers);
-      if (!(id in stQuiz)) {
-        let stQuizTime = stQuiz.id.startTime;
-        let quids = Object.keys(stQuiz.id.answers);
-        let stDateTime = new Date();
-        let [hour, minute] = stQuizTime.split(":");
-        stDateTime.setHours(hour, minute);
-        if (stDateTime.getTime() + quiz.totalTime * 60 * 100 <= date.getTime()) {
-          return {
-            message: "Quiz is running and studetn has already started the quiz.",
-            state: 2,
-            quids: quids,
-          };
+  if (date.getTime() >= quizStartDate.getTime()) {
+    try {
+      if (date.getTime() <= quizEndDate.getTime()) {
+        let stQuiz = JSON.parse(student.quizAnswers);
+        console.log(stQuiz)
+        console.log(stQuiz[id])
+        if (id in stQuiz) {
+          let stQuizTime = stQuiz[id].startTime;
+          let quids = Object.keys(stQuiz[id].answers);
+          let stDateTime = new Date();
+          let [hour, minute] = stQuizTime.split(":");
+          stDateTime.setHours(hour, minute);
+          if (stDateTime.getTime() + quiz.totalTime * 60 * 100 >= date.getTime()) {
+            return {
+              message: "Quiz is running and studetn has already started the quiz.",
+              state: 2,
+              quids: quids,
+            };
+          } else {
+            // console.log(JSON.parse(student.attendances));
+            return {
+              message: "Student quiz time has been finished.",
+              state: 3,
+              quids: quids,
+            };
+          }
         } else {
-          // console.log(JSON.parse(student.attendances));
           return {
-            message: "Student quiz time has been finished.",
-            state: 3,
-            quids: quids,
+            message: "Quiz is open and student can start the quiz.",
+            state: 1,
           };
         }
       } else {
         return {
-          message: "Quiz is open and student can start the quiz.",
-          state: 1,
+          message: "Quiz allready ended at " + quizEndDate.toLocaleString(),
+          state: 4,
         };
       }
-    } else {
-      return {
-        message: "Quiz allready ended at " + quizStartDate,
-        state: 4,
-      };
+    } catch (err) {
+      console.log(err);
+      throw customError({});
     }
   } else {
     return {
-      message: "Quiz will start at " + quizStartDate,
+      message: "Quiz will start at " + quizStartDate.toLocaleString(),
       state: 0,
     };
   }
@@ -120,8 +128,9 @@ const getRandQuestions = async (req, res) => {
   const quiz = await quizes.findOne({ id });
   if (isEmpty(quiz)) {
     throw customError({
+      name: "Error404",
       code: 404,
-      message: "quiz not found",
+      message: "CError",
     });
   }
   let checkDate = await checkQuizDate(req, res);
@@ -153,7 +162,11 @@ const getRandQuestions = async (req, res) => {
     // console.log(randQuesId)
     res.status(200).send({
       message: "quiz fetched successfully",
-      data: { randQuestions },
+      data: {
+        randQuestions,
+        message: checkDate.message,
+        state: checkDate.state,
+      },
     });
   } else if (checkDate.state == 2) {
     let quids = checkDate.quids;
@@ -187,7 +200,11 @@ const getRandQuestions = async (req, res) => {
     // console.log(randQuesId)
     res.status(200).send({
       message: "quiz fetched successfully",
-      data: randAnswers,
+      data: {
+        randAnswers,
+        message: checkDate.message,
+        state: checkDate.state,
+      },
     });
   } else {
     res.status(403).send({

@@ -19,9 +19,7 @@ const getAllStudents = async (req, res) => {
 };
 
 const getStudent = async (req, res) => {
-  console.log('hered')
   const { id } = req.query;
-  console.log(id)
   const student = await Student.findOne({ id });
   const date = new Date();
   if (isEmpty(student)) {
