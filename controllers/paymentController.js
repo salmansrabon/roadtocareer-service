@@ -2,6 +2,8 @@ const { v4: uuidV4 } = require("uuid");
 const { isEmpty } = require("lodash");
 const { Student, Payment, Course } = require("../models");
 const { validator, customError, mailer } = require("../utils");
+const { sequelize } = require("../config");
+const { QueryTypes } = require("sequelize");
 
 const getPayments = async (req, res) => {
   const { studentId, courseId } = req.params;
@@ -38,7 +40,18 @@ const getPayment = async (req, res) => {
 };
 
 const getAllPayments = async (req, res) => {
-  const response = await Payment.findAll({ ...req?.query });
+  let response = [];
+  if (req?.query?.showDues == 'true'){
+      response = await sequelize.query(
+        "SELECT * from payments where studentId in (SELECT studentId FROM payments GROUP by studentId HAVING SUM(installmentAmount)-sum(discount)-sum(paidAmount) >0)",
+        { type: QueryTypes.SELECT }
+      );
+      response = {rows:response}
+   
+  } else {
+    response = await Payment.findAll({ ...req?.query});
+  }
+
   res.status(200).send({
     message: "All payments fetched successfully",
     data: response,
@@ -63,7 +76,7 @@ const addPayment = async (req, res) => {
 
   const [payment, student, course] = await Promise.all([
     Payment.findOne({ studentId, courseId, installmentNo }),
-    Student.findOne({ id: studentId }, ["name", "batch", "email","profession", "package"]),
+    Student.findOne({ id: studentId }, ["name", "batch", "email", "profession", "package"]),
     Course.findOne({ id: courseId }),
   ]);
 
@@ -92,17 +105,17 @@ const addPayment = async (req, res) => {
       // due: due,
       // paidAmount: installmentAmount - discount,
       ...req.body,
-    }).then(()=>{
+    }).then(() => {
       mailer.sendMail({
-        name:student.name,
-        email:student.email,
+        name: student.name,
+        email: student.email,
         courseTitle: course.courseTitle,
         batch: course.batch,
-        installmentNo:installmentNo,
-        installmentAmount:installmentAmount,
-        paidAmount:paidAmount,
-        discount:discount,
-        due:due,
+        installmentNo: installmentNo,
+        installmentAmount: installmentAmount,
+        paidAmount: paidAmount,
+        discount: discount,
+        due: due,
         type: "sendPayment",
       });
     });
@@ -115,7 +128,6 @@ const addPayment = async (req, res) => {
       ...req.body,
     });
   }
-
 
   res.status(201).send({
     message: "Payment added successfully",

@@ -72,13 +72,13 @@ const checkQuizDate = async (req, res) => {
   let quizStartDate = new Date(quiz.quizStartDate);
   let quizEndDate = new Date(quiz.quizEndDate);
   console.log(quizStartDate);
+  let stQuiz = JSON.parse(student.quizAnswers);
 
   if (date.getTime() >= quizStartDate.getTime()) {
     try {
       if (date.getTime() <= quizEndDate.getTime()) {
-        let stQuiz = JSON.parse(student.quizAnswers);
-        console.log(stQuiz)
-        console.log(stQuiz[id])
+        // console.log(stQuiz)
+        // console.log(stQuiz[id])
         if (id in stQuiz) {
           let stQuizTime = stQuiz[id].startTime;
           let quids = Object.keys(stQuiz[id].answers);
@@ -106,10 +106,21 @@ const checkQuizDate = async (req, res) => {
           };
         }
       } else {
-        return {
-          message: "Quiz allready ended at " + quizEndDate.toLocaleString(),
-          state: 4,
-        };
+        if(id in stQuiz){
+          let quids = Object.keys(stQuiz[id].answers);
+          return {
+            message: "Quiz allready ended at " + quizEndDate.toLocaleString(),
+            state: 3,
+            quids:quids
+          };
+        }
+        else{
+          return {
+            message: "Quiz allready ended at " + quizEndDate.toLocaleString()+" Student did not participated in the course.",
+            state: 4,
+          };
+        }
+        
       }
     } catch (err) {
       console.log(err);
@@ -183,6 +194,7 @@ const getRandQuestions = async (req, res) => {
     });
   } else if (checkDate.state == 3) {
     let answers = JSON.parse(quiz.answers);
+    let quids = checkDate.quids;
     let randAnswers = {};
     // console.log(maxQ)
     try {
