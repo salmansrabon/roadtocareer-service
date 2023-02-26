@@ -456,7 +456,8 @@ const getQuizMarks = async (req, res) => {
           quizId: quiz.id,
           quizTitle: quiz.title,
           marks: stQuiz[id]?.marks ?? 0,
-          quizAnswer:stQuiz[id]
+          quizAnswer:stQuiz[id],
+          totalMarks:quiz.maxQues
         };
         response.push(resp);
       }
