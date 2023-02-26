@@ -34,21 +34,21 @@ const studentsSchema = sequelize.define("students", {
     type: DataTypes.STRING,
     allowNull: false,
   },
-  passingYear:{
+  passingYear: {
     type: DataTypes.STRING,
-    allowNull:true
+    allowNull: true,
   },
   experience: {
     type: DataTypes.STRING,
-    allowNull:true
+    allowNull: true,
   },
   company: {
     type: DataTypes.STRING,
-    allowNull:true
+    allowNull: true,
   },
   city: {
     type: DataTypes.STRING,
-    allowNull:true
+    allowNull: true,
   },
   mobile: {
     type: DataTypes.STRING,
@@ -62,14 +62,14 @@ const studentsSchema = sequelize.define("students", {
     },
   },
   attendances: {
-    type: DataTypes.JSON, 
+    type: DataTypes.JSON,
     allowNull: true,
-    defaultValue: [],//[date]
+    defaultValue: [], //[date]
   },
-  marks:{
-    type:DataTypes.JSON,
-    allowNull:true,
-    defaultValue:JSON.stringify({'Assignments':[], 'Quizes':[]})
+  marks: {
+    type: DataTypes.JSON,
+    allowNull: true,
+    defaultValue: JSON.stringify({ Assignments: [], Quizes: [] }),
   },
   isEnrolled: {
     type: DataTypes.BOOLEAN,
@@ -81,20 +81,17 @@ const studentsSchema = sequelize.define("students", {
     allowNull: false,
     defaultValue: false,
   },
-  assignmentAnswers:{
-    type:DataTypes.JSON,
-    allowNull:true,
-    defaultValue:[]
-    
+  assignmentAnswers: {
+    type: DataTypes.JSON,
+    allowNull: true,
+    defaultValue: [],
   },
-  quizAnswers:{
-    type:DataTypes.JSON,
-    allowNull:true,
-    defaultValue:{} // {quizid:{startTime:9.30 , marks:15, answers: [{questionId1:"Not given",questionId2:"True"}} ,anotherQuizId:{...}}
-    
-  }
+  quizAnswers: {
+    type: DataTypes.JSON,
+    allowNull: true,
+    defaultValue: {}, // {quizid:{startTime:9.30, marks:15, answers: [{questionId1:"Not given",questionId2:"True"}} ,anotherQuizId:{...}}
+  },
 });
-
 
 const findOne = async (filters = {}, attributes = null) => {
   const response = await studentsSchema.findOne({
@@ -104,7 +101,17 @@ const findOne = async (filters = {}, attributes = null) => {
   return response;
 };
 
-const findAll = async (filters = {}, attributes = null, limit = null, page = 1, other = null, order = [['createdAt', 'DESC'], ['updatedAt', 'DESC']]) => {
+const findAll = async (
+  filters = {},
+  attributes = null,
+  limit = null,
+  page = 1,
+  other = null,
+  order = [
+    ["createdAt", "DESC"],
+    ["updatedAt", "DESC"],
+  ]
+) => {
   const offset = limit ? (page - 1) * limit : null;
   const response = await studentsSchema.findAndCountAll({
     where: { ...filters },
@@ -112,7 +119,7 @@ const findAll = async (filters = {}, attributes = null, limit = null, page = 1, 
     ...(attributes && { attributes }),
     ...(offset && { offset }),
     ...(limit && { limit }),
-    order:order
+    order: order,
   });
   return response;
 };
@@ -135,7 +142,7 @@ const destroy = async (filters) => {
     where: {
       ...filters,
     },
-  })
+  });
   return response;
 };
 module.exports = {
@@ -143,5 +150,5 @@ module.exports = {
   findAll,
   create,
   update,
-  destroy
+  destroy,
 };

@@ -1,6 +1,6 @@
 const { v4: uuidV4 } = require("uuid");
 const { isEmpty } = require("lodash");
-const { quizes, Student, Course } = require("../models");
+const { quizes, Student, Course, packages } = require("../models");
 const { validator, customError } = require("../utils");
 const { object } = require("joi");
 
@@ -53,9 +53,12 @@ const getQuiz = async (req, res) => {
 };
 const checkQuizDate = async (req, res) => {
   const { id } = req.params;
-  const { studentId } = req.body;
+
+  const { studentId } = req.query;
+  // console.log(studentId)
   const date = new Date();
   const student = await Student.findOne({ id: studentId });
+  // console.log(student)
   if (isEmpty(student)) {
     throw customError({
       code: 404,
@@ -71,9 +74,7 @@ const checkQuizDate = async (req, res) => {
   }
   let quizStartDate = new Date(quiz.quizStartDate);
   let quizEndDate = new Date(quiz.quizEndDate);
-  console.log(quizStartDate);
   let stQuiz = JSON.parse(student.quizAnswers);
-
   if (date.getTime() >= quizStartDate.getTime()) {
     try {
       if (date.getTime() <= quizEndDate.getTime()) {
@@ -81,17 +82,32 @@ const checkQuizDate = async (req, res) => {
         // console.log(stQuiz[id])
         if (id in stQuiz) {
           let stQuizTime = stQuiz[id].startTime;
+
           let quids = Object.keys(stQuiz[id].answers);
-          let stDateTime = new Date();
-          let [hour, minute] = stQuizTime.split(":");
-          stDateTime.setHours(hour, minute);
-          if (stDateTime.getTime() + quiz.totalTime * 60 * 100 >= date.getTime()) {
+          let stDateTime = new Date(stQuizTime);
+          // let [hour, minute] = stQuizTime.split(":");
+
+          // stDateTime.setHours(hour, minute);
+          if (stQuiz[id].hasOwnProperty("submitted")) {
+            if (stQuiz[id]["submitted"] == true) {
+              return {
+                message: "Student already submitted the quiz",
+                state: 3,
+                quids: quids,
+              };
+            }
+          }
+          if (date.getTime() <= stDateTime.getTime() + quiz.totalTime * 60 * 1000) {
             return {
-              message: "Quiz is running and studetn has already started the quiz.",
+              message: "Quiz is running and student has already started the quiz.",
               state: 2,
               quids: quids,
             };
           } else {
+            // console.log(quiz.totalTime)
+            // console.log(date.getTime())
+            // console.log(stDateTime.getTime())
+
             // console.log(JSON.parse(student.attendances));
             return {
               message: "Student quiz time has been finished.",
@@ -106,21 +122,22 @@ const checkQuizDate = async (req, res) => {
           };
         }
       } else {
-        if(id in stQuiz){
+        if (id in stQuiz) {
           let quids = Object.keys(stQuiz[id].answers);
           return {
             message: "Quiz allready ended at " + quizEndDate.toLocaleString(),
             state: 3,
-            quids:quids
+            quids: quids,
           };
-        }
-        else{
+        } else {
           return {
-            message: "Quiz allready ended at " + quizEndDate.toLocaleString()+" Student did not participated in the course.",
+            message:
+              "Quiz allready ended at " +
+              quizEndDate.toLocaleString() +
+              " Student did not participated in the course.",
             state: 4,
           };
         }
-        
       }
     } catch (err) {
       console.log(err);
@@ -134,96 +151,119 @@ const checkQuizDate = async (req, res) => {
   }
 };
 const getRandQuestions = async (req, res) => {
-  // console.log(req.params)
-  const { id } = req.params;
-  const quiz = await quizes.findOne({ id });
-  if (isEmpty(quiz)) {
+  try {
+    const { id } = req.params;
+    const { studentId } = req.query;
+
+    const quiz = await quizes.findOne({ id });
+    if (isEmpty(quiz)) {
+      throw customError({
+        name: "Error404",
+        code: 404,
+        message: "CError",
+      });
+    }
+    let checkDate = await checkQuizDate(req, res);
+    // console.log("helloooooooooo");
+    let questions = JSON.parse(quiz.questions);
+    if (checkDate.state == 1) {
+      let quids = Object.keys(questions);
+      let randQuesId = [];
+      let randQuestions = {};
+      let maxQ = quids.length < quiz.maxQues ? quids.length : quiz.maxQues;
+      let r = "";
+      // console.log(maxQ)
+      try {
+        while (randQuesId.length < maxQ) {
+          r = quids[Math.floor(Math.random() * quids.length)];
+          if (randQuesId.indexOf(r) === -1) randQuesId.push(r);
+        }
+        let sAns = {};
+        for (let quid of randQuesId) {
+          randQuestions[quid] = questions[quid];
+          sAns[quid] = "";
+        }
+        const student = await Student.findOne({ id: studentId });
+        let stQuiz = JSON.parse(student.quizAnswers);
+        stQuiz[id] = { startTime: new Date(), answers: sAns, marks: 0 };
+        console.log(stQuiz);
+        const upResponse = await Student.update(studentId, { quizAnswers: stQuiz });
+      } catch (err) {
+        console.log(err);
+        throw customError({
+          name: "Error404",
+          code: 404,
+          message: "CError",
+        });
+      }
+      // console.log(randQuesId)
+      res.status(200).send({
+        message: "quiz fetched successfully",
+        data: {
+          randQuestions,
+          message: checkDate.message,
+          state: checkDate.state,
+        },
+      });
+    } else if (checkDate.state == 2) {
+      let quids = checkDate.quids;
+      let randQuestions = {};
+      for (let quid of quids) {
+        randQuestions[quid] = questions[quid];
+      }
+      res.status(200).send({
+        data: {
+          message: checkDate.message,
+          state: checkDate.state,
+          randQuestions,
+        },
+      });
+    } else if (checkDate.state == 3) {
+      let answers = JSON.parse(quiz.answers);
+      let quids = checkDate.quids;
+      let randAnswers = {};
+      let randQuestions = {};
+
+      // console.log(maxQ)
+      try {
+        for (let quid of quids) {
+          randAnswers[quid] = answers[quid];
+        }
+        for (let quid of quids) {
+          randQuestions[quid] = questions[quid];
+        }
+      } catch (err) {
+        console.log(err);
+        throw customError({
+          name: "Error404",
+          code: 404,
+          message: "CError",
+        });
+      }
+      // console.log(randQuesId)
+      res.status(200).send({
+        message: "quiz fetched successfully",
+        data: {
+          randAnswers,
+          randQuestions,
+          message: checkDate.message,
+          state: checkDate.state,
+        },
+      });
+    } else {
+      res.status(200).send({
+        data: {
+          message: checkDate.message,
+          state: checkDate.state,
+        },
+      });
+    }
+  } catch (err) {
+    console.log(err);
     throw customError({
       name: "Error404",
       code: 404,
       message: "CError",
-    });
-  }
-  let checkDate = await checkQuizDate(req, res);
-  let questions = JSON.parse(quiz.questions);
-  if (checkDate.state == 1) {
-    let quids = Object.keys(questions);
-    let randQuesId = [];
-    let randQuestions = {};
-    let maxQ = quids.length < quiz.maxQues ? quids.length : quiz.maxQues;
-    let r = "";
-    // console.log(maxQ)
-    try {
-      while (randQuesId.length < maxQ) {
-        r = quids[Math.floor(Math.random() * quids.length)];
-        if (randQuesId.indexOf(r) === -1) randQuesId.push(r);
-      }
-
-      for (let quid of randQuesId) {
-        randQuestions[quid] = questions[quid];
-      }
-    } catch (err) {
-      console.log(err);
-      throw customError({
-        name: "Error404",
-        code: 404,
-        message: "CError",
-      });
-    }
-    // console.log(randQuesId)
-    res.status(200).send({
-      message: "quiz fetched successfully",
-      data: {
-        randQuestions,
-        message: checkDate.message,
-        state: checkDate.state,
-      },
-    });
-  } else if (checkDate.state == 2) {
-    let quids = checkDate.quids;
-    let randQuestions = {};
-    for (let quid of quids) {
-      randQuestions[quid] = questions[quid];
-    }
-    res.status(200).send({
-      data: {
-        message: checkDate.message,
-        state: checkDate.state,
-        randQuestions,
-      },
-    });
-  } else if (checkDate.state == 3) {
-    let answers = JSON.parse(quiz.answers);
-    let quids = checkDate.quids;
-    let randAnswers = {};
-    // console.log(maxQ)
-    try {
-      for (let quid of quids) {
-        randAnswers[quid] = answers[quid];
-      }
-    } catch (err) {
-      console.log(err);
-      throw customError({
-        name: "Error404",
-        code: 404,
-        message: "CError",
-      });
-    }
-    // console.log(randQuesId)
-    res.status(200).send({
-      message: "quiz fetched successfully",
-      data: {
-        randAnswers,
-        message: checkDate.message,
-        state: checkDate.state,
-      },
-    });
-  } else {
-    res.status(403).send({
-      data: {
-        message: checkDate.message,
-        state: checkDate.state,
-      },
     });
   }
 };
@@ -241,6 +281,13 @@ const getQuestions = async (req, res) => {
   }
   let questions = JSON.parse(quiz.questions);
   let randQuestions = {};
+  if (typeof quids == "undefined" || !quids) {
+    return res.status(200).send({
+      message: "quiz fetched successfully",
+      data: questions,
+    });
+  }
+
   // console.log(maxQ)
   try {
     for (let quid of quids) {
@@ -264,18 +311,29 @@ const getQuestions = async (req, res) => {
 const getAnswers = async (req, res) => {
   // console.log(req.params)
   const { id } = req.params;
-  const { quids } = req.body;
-  const quiz = await quizes.findOne({ id });
-  if (isEmpty(quiz)) {
-    throw customError({
-      code: 404,
-      message: "quiz not found",
-    });
-  }
-  let answers = JSON.parse(quiz.answers);
+  const { studentId } = req.query;
+  let quids = req.query?.quids;
   let randAnswers = {};
-  // console.log(maxQ)
+
   try {
+    if (quids == undefined) {
+      const student = await Student.findOne({ id: studentId });
+      let stQuiz = JSON.parse(student.quizAnswers);
+      console.log(stQuiz);
+      if (id in stQuiz) {
+        quids = Object.keys(stQuiz[id].answers);
+      }
+    }
+    const quiz = await quizes.findOne({ id });
+    if (isEmpty(quiz)) {
+      throw customError({
+        code: 404,
+        message: "quiz not found",
+      });
+    }
+    let answers = JSON.parse(quiz.answers);
+    // console.log(maxQ)
+
     for (let quid of quids) {
       randAnswers[quid] = answers[quid];
     }
@@ -287,6 +345,7 @@ const getAnswers = async (req, res) => {
       message: "CError",
     });
   }
+
   // console.log(randQuesId)
   res.status(200).send({
     message: "quiz fetched successfully",
@@ -296,42 +355,48 @@ const getAnswers = async (req, res) => {
 
 const getAllQuizes = async (req, res) => {
   let { id, role, ...filters } = req.query;
+  try {
+    if (role == "student") {
+      const student = await Student.findOne({ id });
+      if (isEmpty(student)) {
+        throw customError({
+          code: 404,
+          message: "Student not found",
+        });
+      }
+      filters.courseId = student.courseId;
 
-  if (role == "student") {
-    const student = await Student.findOne({ id });
-    if (isEmpty(student)) {
+      const package = await packages.findOne({
+        courseId: student.courseId,
+        packageName: student.package,
+      });
+      if (isEmpty(package)) {
+        throw customError({
+          code: 404,
+          message: "Package not found",
+        });
+      }
+      filters.packageId = package.id;
+    }
+
+    const response = await quizes.findAll({ ...filters });
+    if (isEmpty(response.rows)) {
       throw customError({
         code: 404,
-        message: "Student not found",
+        message: "No quiz found",
       });
     }
-    filters.courseId = student.courseId;
-
-    const package = await packages.findOne({
-      courseId: student.courseId,
-      packageName: student.package,
+    res.status(200).send({
+      message: "quizes fetched successfully",
+      data: response,
     });
-    if (isEmpty(package)) {
-      throw customError({
-        code: 404,
-        message: "Package not found",
-      });
-    }
-    filters.packageId = package.id;
-  }
-
-  const response = await quizes.findAll({ ...filters });
-
-  if (isEmpty(response.rows)) {
+  } catch (err) {
+    console.log(err);
     throw customError({
       code: 404,
-      message: "No quiz found",
+      message: "Some error occured.",
     });
   }
-  res.status(200).send({
-    message: "quizes fetched successfully",
-    data: response,
-  });
 };
 
 const addQuiz = async (req, res) => {
@@ -362,6 +427,53 @@ const editQuiz = async (req, res) => {
   });
 };
 
+const getQuizMarks = async (req, res) => {
+  const { id } = req.params;
+  const quiz = await quizes.findOne({ id });
+  if (isEmpty(quiz)) {
+    throw customError({
+      code: 404,
+      message: "quiz not found",
+    });
+  }
+  try {
+    const students = await Student.findAll({ courseId: quiz.courseId });
+    // console.log(students.rows)
+    if (isEmpty(students)) {
+      throw customError({
+        code: 404,
+        message: "No students registered in this course",
+      });
+    }
+    let response = [];
+    for (student of students.rows) {
+      let stQuiz = JSON.parse(student.quizAnswers)??{};
+      if (id in stQuiz) {
+        let resp = {
+          studentId: student.id,
+          courseId: quiz.courseId,
+          studentName: student.name,
+          quizId: quiz.id,
+          quizTitle: quiz.title,
+          marks: stQuiz[id]?.marks ?? 0,
+          quizAnswer:stQuiz[id]
+        };
+        response.push(resp);
+      }
+    }
+    res.status(201).send({
+      message: "retrive quiz marks successfully",
+      data: response,
+    });
+  } catch (err) {
+    console.log(err);
+    throw customError({
+      code: 403,
+      message: "CError",
+    });
+  }
+};
+
 const destroyQuiz = async (req, res) => {
   const { id } = req.params;
   const Quiz = await quizes.findOne({ id });
@@ -390,4 +502,5 @@ module.exports = {
   getRandQuestions,
   getQuestions,
   getAnswers,
+  getQuizMarks,
 };

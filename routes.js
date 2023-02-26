@@ -86,6 +86,7 @@ privateRouter.get("/v1/quizes/:id", quizesController.getQuiz);
 privateRouter.get("/v1/quizes/getRandomQuestions/:id", quizesController.getRandQuestions)
 privateRouter.get("/v1/quizes/getQuestions/:id", quizesController.getQuestions)
 privateRouter.get("/v1/quizes/getSecretAnswers365/:id", quizesController.getAnswers)
+privateRouter.get("/v1/quizes/getMarks/:id", quizesController.getQuizMarks)
 
 privateRouter.post("/v1/quizes", quizesController.addQuiz);
 privateRouter.put("/v1/quizes/:id", quizesController.editQuiz);

@@ -22,11 +22,11 @@ const usersSchema = sequelize.define("users", {
     allowNull: false,
     defaultValue: "student",
   },
-  pcToken:{
-    type:DataTypes.STRING,
-    allowNull:true,
-    defaultValue:""
-  }
+  pcToken: {
+    type: DataTypes.STRING,
+    allowNull: true,
+    defaultValue: "",
+  },
 });
 
 const findOne = async (filters = {}, attributes = null) => {
@@ -72,5 +72,5 @@ module.exports = {
   findAll,
   create,
   update,
-  destroy
+  destroy,
 };

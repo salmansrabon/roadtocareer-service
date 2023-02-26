@@ -173,7 +173,7 @@ const checkAttendanceDate = async (req, res) => {
       };
     } else if (
       date.getTime() >= cTime.getTime() &&
-      date.getTime() <= cTime.getTime() + 90 * 60 * 1000
+      date.getTime() <= cTime.getTime() + 150 * 60 * 1000
     ) {
       // console.log(JSON.parse(student.attendances));
       return {
