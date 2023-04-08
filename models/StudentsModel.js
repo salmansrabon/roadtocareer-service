@@ -91,6 +91,14 @@ const studentsSchema = sequelize.define("students", {
     allowNull: true,
     defaultValue: {}, // {quizid:{startTime:9.30, marks:15, answers: [{questionId1:"Not given",questionId2:"True"}} ,anotherQuizId:{...}}
   },
+  ssEnable:{
+    type:DataTypes.BOOLEAN,
+    defaultValue:false
+  },
+  successStory:{
+    type:DataTypes.STRING,
+    allowNull:true,
+  }
 });
 
 const findOne = async (filters = {}, attributes = null) => {

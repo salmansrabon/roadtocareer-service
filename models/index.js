@@ -8,5 +8,6 @@ module.exports = {
   modules: require("./modulesModel"),
   quizes:require('./QuizesModule'),
   assignments:require('./AssignmentsModel'),
-  teachers:require('./TeachersModel')
+  teachers:require('./TeachersModel'),
+  reviews:require('./ReviewsModel')
 };

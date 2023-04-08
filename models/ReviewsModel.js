@@ -1,46 +1,34 @@
 const { sequelize, DataTypes } = require("../config");
 
-const teachersSchema = sequelize.define("teachers", {
+const reviewsSchema = sequelize.define("reviews", {
   id: {
-    type: DataTypes.STRING,
-    allowNull: false,
+    type: DataTypes.INTEGER,
+    autoIncrement: true,
     primaryKey: true,
-  },
-  courseIds: {
-    type: DataTypes.JSON, //[course id list....]
-    allowNull: false,
   },
   name: {
     type: DataTypes.STRING,
     allowNull: false,
   },
-  university: {
+  image: {
     type: DataTypes.STRING,
-    allowNull: false,
   },
-  mobile: {
-    type: DataTypes.STRING,
-    allowNull: false,
+  batch: {
+    type: DataTypes.INTEGER,
+    defaultValue: 0,
   },
-  email: {
-    type: DataTypes.STRING,
-    allowNull: false,
-    validate: {
-      isEmail: true,
-    },
+  rating: {
+    type: DataTypes.INTEGER,
+    defaultValue: 0,
   },
-  ssEnable:{
-    type:DataTypes.BOOLEAN,
-    defaultValue:false,
+  description: {
+    type: DataTypes.TEXT,
+    allowNull: true,
   },
-  about:{
-    type:DataTypes.STRING,
-    allowNull:true
-  }
 });
 
 const findOne = async (filters = {}, attributes = null) => {
-  const response = await teachersSchema.findOne({
+  const response = await reviewsSchema.findOne({
     where: { ...filters },
     ...(attributes && { attributes }),
   });
@@ -52,16 +40,15 @@ const findAll = async (
   attributes = null,
   limit = null,
   page = 1,
-  other = null,
   order = [
     ["createdAt", "DESC"],
     ["updatedAt", "DESC"],
   ]
 ) => {
   const offset = limit ? (page - 1) * limit : null;
-  const response = await teachersSchema.findAndCountAll({
+  //return data in descending order
+  const response = await reviewsSchema.findAndCountAll({
     where: { ...filters },
-    ...(other && other),
     ...(attributes && { attributes }),
     ...(offset && { offset }),
     ...(limit && { limit }),
@@ -71,32 +58,30 @@ const findAll = async (
 };
 
 const create = async (data) => {
-  const response = await teachersSchema.create(data);
+  const response = await reviewsSchema.create(data);
   return response;
 };
 
 const update = async (id, data) => {
-  const response = await teachersSchema.update(data, {
+  const response = await reviewsSchema.update(data, {
     where: {
       id: id,
     },
   });
   return response;
 };
-
 const destroy = async (filters) => {
-  const response = await teachersSchema.destroy({
+  const response = await reviewsSchema.destroy({
     where: {
       ...filters,
     },
   });
   return response;
 };
-
 module.exports = {
   findOne,
   findAll,
   create,
   update,
-  destroy
+  destroy,
 };
