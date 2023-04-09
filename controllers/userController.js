@@ -5,8 +5,6 @@ const { v4: uuidV4 } = require("uuid");
 const { User, Student, Course } = require("../models");
 const { validator, customError, mailer, isEmail, randomPassGenerate } = require("../utils");
 const variables = require("../variables");
-const { EmptyResultError } = require("sequelize");
-const { reset } = require("nodemon");
 
 const signUp = async (req, res) => {
   let {
@@ -99,7 +97,7 @@ const signUp = async (req, res) => {
       type: "enroll",
     });
   }
-  if (role === "admin") {
+  if (role === "admin" || "teacher") {
     let user = await User.findOne({ email, role });
     if (!isEmpty(user)) {
       throw customError({

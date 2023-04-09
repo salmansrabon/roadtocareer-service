@@ -54,7 +54,7 @@ const withAdminAuth = async (req, res, next) => {
   }
   const user = await User.findOne({id:req.user.id});
   // console.log(user)
-  console.log('here')
+  console.log('Authontication process...')
   if(isEmpty(user)){
     throw customError({
       code: 403,

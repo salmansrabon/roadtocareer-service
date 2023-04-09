@@ -3,28 +3,28 @@ const { PASSWORD } = require("../config/db");
 const { brand, nodemailerUser, nodemailerPassword, baseURL, nodemailerPort, baseUrl, nodemailerHost } = require("../variables");
 
 //mailer config
-const transporter = createTransport({
-  host: nodemailerHost,
-  port: nodemailerPort,
-  secure: false,
-  secureConnection: false,
-  auth: {
-    user: nodemailerUser,
-    pass: nodemailerPassword
-
-  },
-  tls: {
-    rejectUnAuthorized: true
-  }
-});
-
 // const transporter = createTransport({
-//   service:'gmail',
+//   host: nodemailerHost,
+//   port: nodemailerPort,
+//   secure: false,
+//   secureConnection: false,
 //   auth: {
 //     user: nodemailerUser,
-//     pass: nodemailerPassword,
+//     pass: nodemailerPassword
+
 //   },
+//   tls: {
+//     rejectUnAuthorized: true
+//   }
 // });
+
+const transporter = createTransport({
+  service:'gmail',
+  auth: {
+    user: nodemailerUser,
+    pass: nodemailerPassword,
+  },
+});
 
 const mailOptions = (data) => {
   const { name, email, courseTitle, batch, type } = data;
@@ -53,6 +53,12 @@ const mailOptions = (data) => {
     options.subject = `${brand} payment confirmation.`;
     options.html = `Dear ${name},<br>We have received your payment of BDT ৳ ${paidAmount} for the installment no.${installmentNo} .<br>Please login to our <a href="https://www.roadtocareer.net" rel="noopener noreferrer" target="_blank">website </a>to check your payment details.
     <p>Regards<br>${brand}<br>Whatsapp: 01686606909<br>Fb Group: <a data-fr-linked="true" href="https://www.facebook.com/groups/roadtosdet">https://www.facebook.com/groups/roadtosdet</a></p>`
+  }
+  else if(type == "tRegistration"){
+    const {name, courseIds, password, userId} = data;
+    options.subject = `${brand} Teacher registration successfull.`;
+    options.html = `Dear ${name},<br>Welcome to our family. Here is your login credintial:<br>Email: ${email}<br>User Id: ${userId}<br>password: ${password}<br>Please check the following links:<br>Whatsapp: 01686606909<br>Fb Group: https://www.facebook.com/groups/roadtosdet`;
+  
   }
   return options;
 };

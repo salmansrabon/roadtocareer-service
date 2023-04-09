@@ -89,9 +89,9 @@ privateRouter.put("/v1/quizes/:id", quizesController.editQuiz);
 privateRouter.delete("/v1/quiz/:id", quizesController.destroyQuiz);
 
 privateRouter.get("/v1/teachers", teachersController.getAllTeachers);
-privateRouter.get("/v1/teachers/:id", teachersController.getTeacher);
-privateRouter.post("/v1/teachers", teachersController.addTeacher);
-privateRouter.put("/v1/teachers/:id", teachersController.editTeacher);
+privateRouter.get("/v1/teacher/:id", teachersController.getTeacher);
+privateRouter.post("/v1/teacher", teachersController.addTeacher);
+privateRouter.put("/v1/teacher/:id", teachersController.editTeacher);
 privateRouter.delete("/v1/teacher/:id", teachersController.destroyTeacher);
 
 privateRouter.get("/v1/all/reviews", reviewsController.getAllReviews);

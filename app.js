@@ -57,10 +57,9 @@ app.post("/upload-image", withAuth, upload.single("image"), (req, res) => {
   }
   if (typeof req.body?.previous !== undefined) {
     fs.unlink(`./public/images/${dir}/${req.body.previous}`, (err) => {
-      console.log(err)
+      if (err) console.log(err);
       console.log(` succesfully deleted ./public/images/${dir}/${req.body.previous}`);
     });
-      
   }
 
   fs.move("./public/tempDir/" + fileName, dest_path + fileName, { overwrite: true })

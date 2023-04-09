@@ -14,6 +14,10 @@ const teachersSchema = sequelize.define("teachers", {
     type: DataTypes.STRING,
     allowNull: false,
   },
+  designation: {
+    type: DataTypes.STRING,
+    allowNull: false,
+  },
   university: {
     type: DataTypes.STRING,
     allowNull: false,
@@ -33,7 +37,27 @@ const teachersSchema = sequelize.define("teachers", {
     type:DataTypes.BOOLEAN,
     defaultValue:false,
   },
-  about:{
+  team:{
+    type:DataTypes.BOOLEAN,
+    defaultValue:false,
+  },
+  description:{
+    type:DataTypes.STRING,
+    allowNull:true
+  },
+  image:{
+    type:DataTypes.STRING,
+    allowNull:true,
+  },
+  facebook:{
+    type:DataTypes.STRING,
+    allowNull:true
+  },
+  whatsapp:{
+    type:DataTypes.STRING,
+    allowNull:true
+  },
+  linkedin:{
     type:DataTypes.STRING,
     allowNull:true
   }
