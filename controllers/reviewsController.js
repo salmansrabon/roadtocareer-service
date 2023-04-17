@@ -99,20 +99,28 @@ const editReview = async (req, res) => {
 };
 
 const destroyReview = async (req, res) => {
-  const { id } = req.params;
-  const Reviews = await reviews.findOne({ id });
+  console.log('helllooo')
+  try {
+    const { id } = req.params;
+    const Reviews = await reviews.findOne({ id });
 
-  if (isEmpty(Reviews)) {
+    if (isEmpty(Reviews)) {
+      throw customError({
+        code: 404,
+        message: "Reviews not found",
+      });
+    }
+    const response = await reviews.destroy({ id });
+    res.status(201).send({
+      message: "Reviews deleted sucessfully",
+    });
+  } catch (err) {
+    console.log(err);
     throw customError({
-      code: 404,
-      message: "Reviews not found",
+      code: 403,
+      message: CError,
     });
   }
-
-  const response = await reviews.destroy({ id });
-  res.status(201).send({
-    message: "Reviews deleted sucessfully",
-  });
 };
 module.exports = {
   getPublicReview,

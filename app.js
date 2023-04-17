@@ -10,7 +10,7 @@ const Logger = require("./utils/logger");
 
 const { appPort } = require("./variables");
 const { publicRouter, privateRouter, adminAccessRouter } = require("./routes");
-const { auth, errorHandler, withAdminAuth } = require("./middlewires");
+const { auth, errorHandler} = require("./middlewires");
 const { withAuth } = require("./middlewires/withAuth");
 
 const app = express();

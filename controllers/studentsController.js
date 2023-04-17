@@ -3,19 +3,68 @@ const bcrypt = require("bcryptjs");
 const { isEmpty } = require("lodash");
 const { v4: uuidV4 } = require("uuid");
 const { signUp } = require("./userController");
-const { User, Student, Course, assignments, quizes } = require("../models");
+const { User, Student, Course, teachers } = require("../models");
 const { customError, randomPassGenerate, mailer } = require("../utils");
+const { sequelize } = require("../config");
+const { Sequelize } = require("sequelize");
 const { userController } = require(".");
+const { success } = require("../utils/logger");
 
 const getAllStudents = async (req, res) => {
-  const filters = req.query ?? {};
+  let filters = req.query ?? {};
+  // console.log(filters)
 
-  const students = await Student.findAll({ ...filters });
+  try {
+    if (req.user.role == "teacher" && filters?.id == undefined) {
+      const teacher = await teachers.findOne({ id: req.user.id });
 
-  res.status(200).send({
-    message: "Students fetched successfully",
-    data: students,
-  });
+      let courseIds = [];
+      JSON.parse(teacher.courseIds).forEach((value) =>
+        courseIds.push(value.split("+")[0] + value.split("+")[1])
+      );
+
+      // console.log(JSON.parse(JSON.stringify(courseIds)));
+      // let packageIds = JSON.parse(teacher.courseIds).map((value, index) => value.split("+").pop());
+      // filters.courseId = courseIds;
+      // console.log(courseIds);
+      // filters.packageId = packageIds;
+
+      const tempSQL = sequelize
+        .getQueryInterface()
+        .queryGenerator.selectQuery("students", {
+          attributes: ["id"],
+          where: sequelize.where(
+            sequelize.fn("concat", sequelize.col("courseId"), sequelize.col("package")),
+            {
+              [Sequelize.Op.in]: courseIds,
+            }
+          ),
+        })
+        .slice(0, -1); // to remove the ';' from the end of the SQL
+      // console.log("tempsql printing");
+      // console.log(tempSQL);
+      // MyTable.find({
+      //   where: {
+      //     id: {
+      //       [Sequelize.Op.notIn]: sequelize.literal(`(${tempSQL})`),
+      //     },
+      //   },
+      // });
+      filters.id = { [Sequelize.Op.in]: sequelize.literal(`(${tempSQL})`) };
+    }
+    const students = await Student.findAll({ ...filters });
+
+    res.status(200).send({
+      message: "Students fetched successfully",
+      data: students,
+    });
+  } catch (err) {
+    console.log(err);
+    throw customError({
+      code: 404,
+      message: "CERROR",
+    });
+  }
 };
 
 const getStudent = async (req, res) => {
@@ -84,7 +133,9 @@ const updateStudent = async (req, res) => {
     }
   }
   const student = await Student.update(studentId, req.body);
-
+  if (req.body?.email) {
+    await User.update(studentId, { email: req.body.email });
+  }
   res.status(200).send({
     message: "Student updated" + msg + "successfully",
     data: { ...student, ...resp },
@@ -278,8 +329,27 @@ const addQuizAnswer = async (req, res) => {
       message: "Student not found",
     });
   }
-  
-}
+};
+
+const getStudentSuccessStories = async (req, res) => {
+  let filters = req.query ?? {};
+  const stories = await Student.findAll({ ...filters, ssEnable: true }, [
+    "name",
+    "email",
+    "image",
+    "university",
+    "profession",
+    "courseId",
+    "courseTitle",
+    "package",
+    "batch",
+    "successStory",
+  ]);
+  res.status(200).send({
+    message: "Stories fetched successfully",
+    data: stories,
+  });
+};
 module.exports = {
   getAllStudents,
   getStudent,
@@ -289,5 +359,6 @@ module.exports = {
   destroyStudent,
   addAttandence,
   checkAttendanceDate,
-  addAttandence_Admin
+  addAttandence_Admin,
+  getStudentSuccessStories
 };

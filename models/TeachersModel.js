@@ -8,7 +8,8 @@ const teachersSchema = sequelize.define("teachers", {
   },
   courseIds: {
     type: DataTypes.JSON, //[course id list....]
-    allowNull: false,
+    allowNull: true,
+    // defaultValue:JSON.stringify([]),
   },
   name: {
     type: DataTypes.STRING,
@@ -42,7 +43,7 @@ const teachersSchema = sequelize.define("teachers", {
     defaultValue:false,
   },
   description:{
-    type:DataTypes.STRING,
+    type:DataTypes.TEXT,
     allowNull:true
   },
   image:{

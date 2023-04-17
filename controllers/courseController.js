@@ -1,6 +1,6 @@
 const { v4: uuidV4 } = require("uuid");
 const { isEmpty } = require("lodash");
-const { Course, packages, modules, assignments } = require("../models");
+const { Course, packages, modules, teachers } = require("../models");
 const { validator, customError } = require("../utils");
 
 // Public Controllers
@@ -52,21 +52,35 @@ const getCourse = async (req, res) => {
 };
 
 const getAllCourses = async (req, res) => {
-  const filters = req.query ?? {};
-  const response = await Course.findAll({ ...filters }, ["id", "courseTitle", "batch", "price"]);
+  let filters = req.query ?? {};
+  try {
+    if (req.user.role == "teacher" && filters?.id == undefined) {
+      const teacher = await teachers.findOne({ id: req.user.id });
+      let courseIds = JSON.parse(teacher.courseIds).map((value, index) => value.split("+")[0]);
+      // console.log(courseIds)
+      filters.id = courseIds;
+    }
+    const response = await Course.findAll({ ...filters }, ["id", "courseTitle", "batch", "price"]);
 
-  // console.log(response);
+    // console.log(response);
 
-  if (isEmpty(response.rows)) {
+    if (isEmpty(response.rows)) {
+      throw customError({
+        code: 404,
+        message: "No course found",
+      });
+    }
+    res.status(200).send({
+      message: "Courses fetched successfully",
+      data: response,
+    });
+  } catch (err) {
+    console.log(err);
     throw customError({
       code: 404,
-      message: "No course found",
+      message: "CERROR",
     });
   }
-  res.status(200).send({
-    message: "Courses fetched successfully",
-    data: response,
-  });
 };
 
 const addCourse = async (req, res) => {
@@ -133,9 +147,9 @@ const destroyCourse = async (req, res) => {
 
   const response = await Course.destroy({ id });
   const package = await packages.findAll({ courseId: id });
-  if (!isEmpty(package)) await packages.destroy({courseId: id});
-  const module_s = await modules.findAll({ courseId: id});
-  if (!isEmpty(module_s)) modules.destroy({courseId: id});
+  if (!isEmpty(package)) await packages.destroy({ courseId: id });
+  const module_s = await modules.findAll({ courseId: id });
+  if (!isEmpty(module_s)) modules.destroy({ courseId: id });
 
   res.status(201).send({
     message: "Course deleted sucessfully",

@@ -11,14 +11,14 @@ const signUp = async (req, res) => {
     name,
     university,
     profession,
-    experience="",
-    company="",
+    experience = "",
+    company = "",
     city,
     mobile,
     email,
     password = randomPassGenerate(8),
     courseId,
-    passingYear="",
+    passingYear = "",
     package,
     role = "student",
   } = req.body;
@@ -26,7 +26,8 @@ const signUp = async (req, res) => {
   email = email.toLowerCase();
   let response = {};
   let id = "";
-  if (role !== "admin") {
+  console.log('role', role)
+  if (role == "student") {
     validator(req.body, "signup");
 
     const course = await Course.findOne({ id: courseId });
@@ -96,8 +97,7 @@ const signUp = async (req, res) => {
       batch: course.batch,
       type: "enroll",
     });
-  }
-  if (role === "admin" || "teacher") {
+  } else {
     let user = await User.findOne({ email, role });
     if (!isEmpty(user)) {
       throw customError({

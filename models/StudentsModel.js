@@ -61,6 +61,10 @@ const studentsSchema = sequelize.define("students", {
       isEmail: true,
     },
   },
+  image:{
+    type:DataTypes.STRING,
+    allowNull:true,
+  },
   attendances: {
     type: DataTypes.JSON,
     allowNull: true,
@@ -96,7 +100,7 @@ const studentsSchema = sequelize.define("students", {
     defaultValue:false
   },
   successStory:{
-    type:DataTypes.STRING,
+    type:DataTypes.TEXT,
     allowNull:true,
   }
 });

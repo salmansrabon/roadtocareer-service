@@ -1,6 +1,6 @@
 const { v4: uuidV4 } = require("uuid");
 const { isEmpty } = require("lodash");
-const { quizes, Student, Course, packages } = require("../models");
+const { quizes, Student, Course, packages, teachers } = require("../models");
 const { validator, customError } = require("../utils");
 const { object } = require("joi");
 
@@ -355,6 +355,7 @@ const getAnswers = async (req, res) => {
 
 const getAllQuizes = async (req, res) => {
   let { id, role, ...filters } = req.query;
+  
   try {
     if (role == "student") {
       const student = await Student.findOne({ id });
@@ -377,6 +378,15 @@ const getAllQuizes = async (req, res) => {
         });
       }
       filters.packageId = package.id;
+    }
+
+    if (req.user.role == "teacher" && filters?.packageId == undefined) {
+      const teacher = await teachers.findOne({ id: req.user.id });
+      let packageIds = JSON.parse(teacher.courseIds).map((value, index) => value.split("+")[2]);
+      // let packageIds = JSON.parse(teacher.courseIds).map((value, index) => value.split("+").pop());
+      filters.packageId = packageIds;
+      // console.log(packageIds)
+      // filters.packageId = packageIds;
     }
 
     const response = await quizes.findAll({ ...filters });

@@ -25,15 +25,20 @@ publicRouter.put("/validatePCToken", userController.isAuthenticPCToken);
 publicRouter.get("/course", courseController.getPublicCourse);
 publicRouter.get("/courses", courseController.getPublicCourses);
 
-publicRouter.get("/v1/modules", modulesController.getAllModules);
-publicRouter.get("/v1/modules/:id", modulesController.getModule);
+publicRouter.get("/v1/pub/modules", modulesController.getAllModules);
+publicRouter.get("/v1/pub/modules/:id", modulesController.getModule);
 
-publicRouter.get("/v1/packages", packageController.getAllPackages);
-publicRouter.get("/v1/packages/:id", packageController.getPackage);
+publicRouter.get("/v1/pub/packages", packageController.getAllPackages);
+publicRouter.get("/v1/pub/packages/:id", packageController.getPackage);
 
 
 publicRouter.get("/v1/reviews", reviewsController.getPublicReviews);
 publicRouter.get("/v1/review/:id", reviewsController.getPublicReview);
+
+publicRouter.get("/v1/studentSuccess", studentsController.getStudentSuccessStories);
+publicRouter.get("/v1/teacherSuccess", teachersController.getTeacherSuccessStories);
+publicRouter.get("/v1/ourTeams", teachersController.getTeams);
+
 
 
 privateRouter.get("/v1/auth", userController.isAuthenticated);
@@ -63,10 +68,14 @@ privateRouter.put("/v1/course/:id", courseController.editCourse);
 privateRouter.get("/v1/courses", courseController.getAllCourses);
 privateRouter.delete("/v1/course/:id", courseController.destroyCourse);
 
+privateRouter.get("/v1/packages", packageController.getAllPackages);
+privateRouter.get("/v1/packages/:id", packageController.getPackage);
 privateRouter.post("/v1/packages", packageController.addPackage);
 privateRouter.put("/v1/packages/:id", packageController.editPackage);
 privateRouter.delete("/v1/package/:id", packageController.destroyPackage);
 
+privateRouter.get("/v1/modules", modulesController.getAllModules);
+privateRouter.get("/v1/modules/:id", modulesController.getModule);
 privateRouter.post("/v1/modules", modulesController.addModule);
 privateRouter.put("/v1/modules/:id", modulesController.editModule);
 privateRouter.delete("/v1/module/:id", modulesController.destroyModule);
@@ -98,7 +107,7 @@ privateRouter.get("/v1/all/reviews", reviewsController.getAllReviews);
 privateRouter.get("/v1/ad/review/:id", reviewsController.getReview);
 privateRouter.post("/v1/review", reviewsController.addReview);
 privateRouter.put("/v1/review/:id", reviewsController.editReview);
-privateRouter.delete('v1/review/:id', reviewsController.destroyReview);
+privateRouter.delete('/v1/review/:id', reviewsController.destroyReview);
 
 module.exports = {
   publicRouter,

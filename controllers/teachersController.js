@@ -179,6 +179,46 @@ const destroyTeacher = async (req, res) => {
     message: "Teacher deleted sucessfully",
   });
 };
+
+const getTeacherSuccessStories = async (req, res) => {
+  let filters = req.query ?? {};
+
+  const stories = await teachers.findAll({ ...filters, ssEnable: true }, [
+    "name",
+    "designation",
+    "email",
+    "image",
+    "university",
+    "courseIds",
+    "description",
+    "facebook", 
+    "whatsapp", 
+    "linkedin"
+  ]);
+  res.status(200).send({
+    message: "Stories fetched successfully",
+    data: stories,
+  });
+};
+const getTeams = async (req, res) => {
+  let filters = req.query ?? {};
+  const teams = await teachers.findAll({ ...filters, team: true }, [
+    "name",
+    "designation",
+    "email",
+    "image",
+    "university",
+    "courseIds",
+    "description",
+    "facebook", 
+    "whatsapp", 
+    "linkedin"
+  ]);
+  res.status(200).send({
+    message: "Teams fetched successfully",
+    data: teams,
+  });
+};
 module.exports = {
   getPublicTeacher,
   getPublicTeachers,
@@ -187,4 +227,6 @@ module.exports = {
   addTeacher,
   editTeacher,
   destroyTeacher,
+  getTeacherSuccessStories,
+  getTeams 
 };

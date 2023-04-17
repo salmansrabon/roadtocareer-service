@@ -12,6 +12,7 @@ const getToken = (authorization) => {
 };
 
 const withAuth = async (req, res, next) => {
+  console.log('Authontication process...')
   const authorization = req.header("authorization");
   // console.log(authorization)
   const token = getToken(authorization);
@@ -31,10 +32,12 @@ const withAuth = async (req, res, next) => {
       message: "Authentication",
     });
   }
+  console.log('Authontication process Done.')
   next();
 };
 
 const withAdminAuth = async (req, res, next) => {
+  console.log('Authontication admin process...')
   const authorization = req.header("authorization");
   // console.log(authorization)
   const token = getToken(authorization);
@@ -54,13 +57,14 @@ const withAdminAuth = async (req, res, next) => {
   }
   const user = await User.findOne({id:req.user.id});
   // console.log(user)
-  console.log('Authontication process...')
   if(isEmpty(user)){
     throw customError({
       code: 403,
       message: "Authentication decline.",
     });
   }
+  console.log('Authontication process Done.')
+
   next();
 };
 

@@ -1,6 +1,6 @@
 const { v4: uuidV4 } = require("uuid");
 const { isEmpty } = require("lodash");
-const { packages, Course, modules } = require("../models");
+const { packages, Course, modules, teachers } = require("../models");
 const { validator, customError } = require("../utils");
 
 // Public Controllers
@@ -52,19 +52,35 @@ const getPackage = async (req, res) => {
 };
 
 const getAllPackages = async (req, res) => {
-  const filters = req.query ?? {};
-  const response = await packages.findAll({ ...filters });
+  try {
+    let filters = req.query ?? {};
+    if (req.user.role == "teacher" && filters?.id == undefined) {
+      const teacher = await teachers.findOne({ id: req.user.id });
+      let packageIds = JSON.parse(teacher.courseIds).map((value, index) => value.split("+")[2]);
+      // let packageIds = JSON.parse(teacher.courseIds).map((value, index) => value.split("+").pop());
+      filters.id = packageIds;
+      // console.log(packageIds)
+      // filters.packageId = packageIds;
+    }
+    const response = await packages.findAll({ ...filters });
 
-  if (isEmpty(response.rows)) {
+    if (isEmpty(response.rows)) {
+      throw customError({
+        code: 404,
+        message: "No Package found",
+      });
+    }
+    res.status(200).send({
+      message: "Packages fetched successfully",
+      data: response,
+    });
+  } catch (err) {
+    console.log(err);
     throw customError({
-      code: 404,
-      message: "No Package found",
+      code: 403,
+      message: "CERROR",
     });
   }
-  res.status(200).send({
-    message: "Packages fetched successfully",
-    data: response,
-  });
 };
 
 const addPackage = async (req, res) => {
