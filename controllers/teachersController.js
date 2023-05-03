@@ -69,32 +69,37 @@ const getAllTeachers = async (req, res) => {
 };
 
 const addTeacher = async (req, res) => {
-  const { name, email, coureIds } = req.body;
-  // console.log(req.body);
-  const role = "teacher";
-  let user = await User.findOne({ email, role });
-  if (!isEmpty(user)) {
-    throw customError({
-      code: 409,
-      message: "User already exists",
-    });
-  }
-
-  let users = await User.findAll({ where: { role: role } });
-  let user_count = "0" + ((users?.length || 0) + 1);
-  id = role + new Date().getFullYear() + user_count;
-
-  req.body.id = id;
-
-  const response = await teachers.create({ ...req.body }).catch((err) => {
-    console.log(err);
-    throw customError({
-      code: 409,
-      message: "CC Error",
-    });
-  });
-
   try {
+    const { name, email, coureIds } = req.body;
+    // console.log(req.body);
+    const role = "teacher";
+    let user = await User.findOne({ email, role });
+    if (!isEmpty(user)) {
+      throw customError({
+        code: 409,
+        message: "User already exists",
+      });
+    }
+
+    let users = await User.findAll({ where: { role: role } });
+    let user_count = 0;
+    if (users.count == 0) {
+      user_count = 1;
+    } else {
+      user_count = Number(users.rows[0].id.split("0").pop()) + 1;
+    }
+
+    id = role + new Date().getFullYear() + "0" + user_count;
+    req.body.id = id;
+
+    const tresponse = await teachers.create({ ...req.body }).catch((err) => {
+      console.log(err);
+      throw customError({
+        code: 409,
+        message: "CC Error",
+      });
+    });
+
     const salt = await bcrypt.genSalt(10);
     // console.log(password)
     const password = randomPassGenerate(8);
@@ -144,6 +149,11 @@ const addTeacher = async (req, res) => {
 };
 
 const editTeacher = async (req, res) => {
+  // console.log(req.body);
+  // throw customError({
+  //   code: 403,
+  //   message: "cE",
+  // });
   const { id } = req.params;
   const teacher = await teachers.findOne({ id });
 
@@ -191,9 +201,9 @@ const getTeacherSuccessStories = async (req, res) => {
     "university",
     "courseIds",
     "description",
-    "facebook", 
-    "whatsapp", 
-    "linkedin"
+    "facebook",
+    "whatsapp",
+    "linkedin",
   ]);
   res.status(200).send({
     message: "Stories fetched successfully",
@@ -210,9 +220,9 @@ const getTeams = async (req, res) => {
     "university",
     "courseIds",
     "description",
-    "facebook", 
-    "whatsapp", 
-    "linkedin"
+    "facebook",
+    "whatsapp",
+    "linkedin",
   ]);
   res.status(200).send({
     message: "Teams fetched successfully",
@@ -228,5 +238,5 @@ module.exports = {
   editTeacher,
   destroyTeacher,
   getTeacherSuccessStories,
-  getTeams 
+  getTeams,
 };

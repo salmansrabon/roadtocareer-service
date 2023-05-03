@@ -5,9 +5,9 @@ const { v4: uuidV4 } = require("uuid");
 const { signUp } = require("./userController");
 const { User, Student, Course, teachers } = require("../models");
 const { customError, randomPassGenerate, mailer } = require("../utils");
-const { sequelize } = require("../config");
-const { Sequelize } = require("sequelize");
-const { userController } = require(".");
+// const { sequelize } = require("../config");
+// const { Sequelize } = require("sequelize");
+// const { userController } = require(".");
 const { success } = require("../utils/logger");
 
 const getAllStudents = async (req, res) => {
@@ -18,39 +18,41 @@ const getAllStudents = async (req, res) => {
     if (req.user.role == "teacher" && filters?.id == undefined) {
       const teacher = await teachers.findOne({ id: req.user.id });
 
-      let courseIds = [];
-      JSON.parse(teacher.courseIds).forEach((value) =>
-        courseIds.push(value.split("+")[0] + value.split("+")[1])
-      );
+      let courseIds = JSON.parse(teacher.courseIds);
+      filters.courseId = courseIds;
+      // let courseIds = [];
+      //   JSON.parse(teacher.courseIds).forEach((value) =>
+      //     courseIds.push(value.split("+")[0] + value.split("+")[1])
+      //   );
 
-      // console.log(JSON.parse(JSON.stringify(courseIds)));
-      // let packageIds = JSON.parse(teacher.courseIds).map((value, index) => value.split("+").pop());
-      // filters.courseId = courseIds;
-      // console.log(courseIds);
-      // filters.packageId = packageIds;
+      //   // console.log(JSON.parse(JSON.stringify(courseIds)));
+      //   // let packageIds = JSON.parse(teacher.courseIds).map((value, index) => value.split("+").pop());
+      //   // filters.courseId = courseIds;
+      //   // console.log(courseIds);
+      //   // filters.packageId = packageIds;
 
-      const tempSQL = sequelize
-        .getQueryInterface()
-        .queryGenerator.selectQuery("students", {
-          attributes: ["id"],
-          where: sequelize.where(
-            sequelize.fn("concat", sequelize.col("courseId"), sequelize.col("package")),
-            {
-              [Sequelize.Op.in]: courseIds,
-            }
-          ),
-        })
-        .slice(0, -1); // to remove the ';' from the end of the SQL
-      // console.log("tempsql printing");
-      // console.log(tempSQL);
-      // MyTable.find({
-      //   where: {
-      //     id: {
-      //       [Sequelize.Op.notIn]: sequelize.literal(`(${tempSQL})`),
-      //     },
-      //   },
-      // });
-      filters.id = { [Sequelize.Op.in]: sequelize.literal(`(${tempSQL})`) };
+      //   const tempSQL = sequelize
+      //     .getQueryInterface()
+      //     .queryGenerator.selectQuery("students", {
+      //       attributes: ["id"],
+      //       where: sequelize.where(
+      //         sequelize.fn("concat", sequelize.col("courseId"), sequelize.col("package")),
+      //         {
+      //           [Sequelize.Op.in]: courseIds,
+      //         }
+      //       ),
+      //     })
+      //     .slice(0, -1); // to remove the ';' from the end of the SQL
+      //   // console.log("tempsql printing");
+      //   // console.log(tempSQL);
+      //   // MyTable.find({
+      //   //   where: {
+      //   //     id: {
+      //   //       [Sequelize.Op.notIn]: sequelize.literal(`(${tempSQL})`),
+      //   //     },
+      //   //   },
+      //   // });
+      //   filters.id = { [Sequelize.Op.in]: sequelize.literal(`(${tempSQL})`) };
     }
     const students = await Student.findAll({ ...filters });
 
@@ -360,5 +362,5 @@ module.exports = {
   addAttandence,
   checkAttendanceDate,
   addAttandence_Admin,
-  getStudentSuccessStories
+  getStudentSuccessStories,
 };

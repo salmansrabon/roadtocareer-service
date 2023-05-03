@@ -38,8 +38,12 @@ const findOne = async (filters = {}, attributes = null) => {
 };
 
 const findAll = async () => {
-  const response = await usersSchema.findAll({
+  const response = await usersSchema.findAndCountAll({
     attributes: ["id", "email", "role"],
+    order : [
+      ["createdAt", "DESC"],
+      ["updatedAt", "DESC"],
+    ]
   });
   return response;
 };

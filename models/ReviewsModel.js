@@ -25,10 +25,30 @@ const reviewsSchema = sequelize.define("reviews", {
     type: DataTypes.TEXT,
     allowNull: true,
   },
-  rEnable:{
-    type:DataTypes.BOOLEAN,
-    defaultValue:false
-  }
+  designation: {
+    type: DataTypes.STRING,
+    allowNull: true,
+  },
+  company: {
+    type: DataTypes.STRING,
+    allowNull: true,
+  },
+  facebook: {
+    type: DataTypes.STRING,
+    allowNull: true,
+  },
+  whatsapp: {
+    type: DataTypes.STRING,
+    allowNull: true,
+  },
+  linkedin: {
+    type: DataTypes.STRING,
+    allowNull: true,
+  },
+  rEnable: {
+    type: DataTypes.BOOLEAN,
+    defaultValue: false,
+  },
 });
 
 const findOne = async (filters = {}, attributes = null) => {

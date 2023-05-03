@@ -55,11 +55,11 @@ const getModule = async (req, res) => {
 const getAllModules = async (req, res) => {
   try {
     let filters = req.query ?? {};
-    if (req.user.role == "teacher" && filters?.packageId == undefined) {
+    if (req.user.role == "teacher" && filters?.courseId == undefined) {
       const teacher = await teachers.findOne({ id: req.user.id });
-      let packageIds = JSON.parse(teacher.courseIds).map((value, index) => value.split("+")[2]);
+      let courseIds = JSON.parse(teacher.courseIds);
       // let packageIds = JSON.parse(teacher.courseIds).map((value, index) => value.split("+").pop());
-      filters.packageId = packageIds;
+      filters.courseId = courseIds;
       // console.log(packageIds)
       // filters.packageId = packageIds;
     }
@@ -79,7 +79,7 @@ const getAllModules = async (req, res) => {
     console.log(err);
     throw customError({
       code: 404,
-      message: "CERROR",
+      message: err.message,
     });
   }
 };

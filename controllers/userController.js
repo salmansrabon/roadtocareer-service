@@ -26,7 +26,7 @@ const signUp = async (req, res) => {
   email = email.toLowerCase();
   let response = {};
   let id = "";
-  console.log('role', role)
+  console.log("role", role);
   if (role == "student") {
     validator(req.body, "signup");
 
@@ -107,8 +107,14 @@ const signUp = async (req, res) => {
     }
 
     let users = await User.findAll({ where: { role: role } });
-    let user_count = "0" + ((users?.length || 0) + 1);
-    id = role + new Date().getFullYear() + user_count;
+    let user_count = 0;
+    if (users.count == 0) {
+      user_count = 1;
+    } else {
+      user_count = Number(users.rows[0].id.split("0").pop()) + 1;
+    }
+
+    id = role + new Date().getFullYear() + "0" + user_count;
     const salt = await bcrypt.genSalt(10);
     // console.log(password)
     password = await bcrypt.hash(password, salt);

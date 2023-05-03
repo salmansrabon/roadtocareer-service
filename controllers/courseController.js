@@ -56,11 +56,17 @@ const getAllCourses = async (req, res) => {
   try {
     if (req.user.role == "teacher" && filters?.id == undefined) {
       const teacher = await teachers.findOne({ id: req.user.id });
-      let courseIds = JSON.parse(teacher.courseIds).map((value, index) => value.split("+")[0]);
+      let courseIds = JSON.parse(teacher.courseIds) ?? [];
       // console.log(courseIds)
       filters.id = courseIds;
     }
-    const response = await Course.findAll({ ...filters }, ["id", "courseTitle", "batch", "price"]);
+    const response = await Course.findAll({ ...filters }, [
+      "id",
+      "courseTitle",
+      "batch",
+      "price",
+      "classDays",
+    ]);
 
     // console.log(response);
 
@@ -78,7 +84,7 @@ const getAllCourses = async (req, res) => {
     console.log(err);
     throw customError({
       code: 404,
-      message: "CERROR",
+      message: err.message,
     });
   }
 };

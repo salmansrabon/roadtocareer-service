@@ -54,11 +54,11 @@ const getPackage = async (req, res) => {
 const getAllPackages = async (req, res) => {
   try {
     let filters = req.query ?? {};
-    if (req.user.role == "teacher" && filters?.id == undefined) {
+    if (req.user.role == "teacher" && filters?.courseId == undefined) {
       const teacher = await teachers.findOne({ id: req.user.id });
-      let packageIds = JSON.parse(teacher.courseIds).map((value, index) => value.split("+")[2]);
+      let courseIds = JSON.parse(teacher.courseIds);
       // let packageIds = JSON.parse(teacher.courseIds).map((value, index) => value.split("+").pop());
-      filters.id = packageIds;
+      filters.courseId = courseIds;
       // console.log(packageIds)
       // filters.packageId = packageIds;
     }
@@ -78,7 +78,7 @@ const getAllPackages = async (req, res) => {
     console.log(err);
     throw customError({
       code: 403,
-      message: "CERROR",
+      message: err.message,
     });
   }
 };

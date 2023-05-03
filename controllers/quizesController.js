@@ -367,24 +367,24 @@ const getAllQuizes = async (req, res) => {
       }
       filters.courseId = student.courseId;
 
-      const package = await packages.findOne({
-        courseId: student.courseId,
-        packageName: student.package,
-      });
-      if (isEmpty(package)) {
-        throw customError({
-          code: 404,
-          message: "Package not found",
-        });
-      }
-      filters.packageId = package.id;
+      // const package = await packages.findOne({
+      //   courseId: student.courseId,
+      //   packageName: student.package,
+      // });
+      // if (isEmpty(package)) {
+      //   throw customError({
+      //     code: 404,
+      //     message: "Package not found",
+      //   });
+      // }
+      // filters.packageId = package.id;
     }
 
-    if (req.user.role == "teacher" && filters?.packageId == undefined) {
+    if (req.user.role == "teacher" && filters?.courseId == undefined) {
       const teacher = await teachers.findOne({ id: req.user.id });
-      let packageIds = JSON.parse(teacher.courseIds).map((value, index) => value.split("+")[2]);
+      let courseIds = JSON.parse(teacher.courseIds);
       // let packageIds = JSON.parse(teacher.courseIds).map((value, index) => value.split("+").pop());
-      filters.packageId = packageIds;
+      filters.courseId = courseIds;
       // console.log(packageIds)
       // filters.packageId = packageIds;
     }
@@ -410,11 +410,21 @@ const getAllQuizes = async (req, res) => {
 };
 
 const addQuiz = async (req, res) => {
+  console.log(req.body)
+  try{
+
   const response = await quizes.create({ ...req.body });
   res.status(201).send({
     message: "quiz added successfully",
     data: response,
   });
+}catch(err){
+  console.log(err);
+  throw customError({
+    code:403,
+    message:"CError"
+  })
+}
 };
 
 const editQuiz = async (req, res) => {

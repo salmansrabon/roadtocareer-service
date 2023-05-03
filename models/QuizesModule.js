@@ -10,10 +10,6 @@ const quizesSchema = sequelize.define("quizes", {
         type: DataTypes.STRING,
         allowNull: false,
     },
-    packageId: {
-        type: DataTypes.INTEGER,
-        allowNull: false,
-    },
     title: {
         type: DataTypes.STRING,
         allowNull: false,
