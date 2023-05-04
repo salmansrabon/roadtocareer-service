@@ -345,6 +345,9 @@ const getStudentSuccessStories = async (req, res) => {
     "courseTitle",
     "package",
     "batch",
+    "facebook",
+    "whatsapp",
+    "linkedin",
     "successStory",
   ]);
   res.status(200).send({

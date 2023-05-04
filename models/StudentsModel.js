@@ -102,6 +102,18 @@ const studentsSchema = sequelize.define("students", {
   successStory:{
     type:DataTypes.TEXT,
     allowNull:true,
+  },
+  facebook:{
+    type:DataTypes.STRING,
+    allowNull:true
+  },
+  whatsapp:{
+    type:DataTypes.STRING,
+    allowNull:true
+  },
+  linkedin:{
+    type:DataTypes.STRING,
+    allowNull:true
   }
 });
 
