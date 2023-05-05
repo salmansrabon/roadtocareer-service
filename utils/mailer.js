@@ -2,7 +2,7 @@ const { createTransport } = require("nodemailer");
 const { PASSWORD } = require("../config/db");
 const { brand, nodemailerUser, nodemailerPassword, baseURL, nodemailerPort, baseUrl, nodemailerHost } = require("../variables");
 
-//mailer config
+mailer config
 const transporter = createTransport({
   host: nodemailerHost,
   port: nodemailerPort,
