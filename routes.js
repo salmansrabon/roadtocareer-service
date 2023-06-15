@@ -25,11 +25,11 @@ publicRouter.put("/validatePCToken", userController.isAuthenticPCToken);
 publicRouter.get("/course", courseController.getPublicCourse);
 publicRouter.get("/courses", courseController.getPublicCourses);
 
-publicRouter.get("/v1/pub/modules", modulesController.getAllModules);
-publicRouter.get("/v1/pub/modules/:id", modulesController.getModule);
+publicRouter.get("/v1/pub/modules", modulesController.getPublicModules);
+publicRouter.get("/v1/pub/modules/:id", modulesController.getPublicModule);
 
-publicRouter.get("/v1/pub/packages", packageController.getAllPackages);
-publicRouter.get("/v1/pub/packages/:id", packageController.getPackage);
+publicRouter.get("/v1/pub/packages", packageController.getPublicPackages);
+publicRouter.get("/v1/pub/packages/:id", packageController.getPublicPackage);
 
 
 publicRouter.get("/v1/reviews", reviewsController.getPublicReviews);
