@@ -54,7 +54,7 @@ const getCourse = async (req, res) => {
 const getAllCourses = async (req, res) => {
   let filters = req.query ?? {};
   try {
-    if (req.user.role == "teacher" && filters?.id == undefined) {
+    if (req?.user?.role == "teacher" && filters?.id == undefined) {
       const teacher = await teachers.findOne({ id: req.user.id });
       let courseIds = JSON.parse(teacher.courseIds) ?? [];
       // console.log(courseIds)

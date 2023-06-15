@@ -54,7 +54,7 @@ const getPackage = async (req, res) => {
 const getAllPackages = async (req, res) => {
   try {
     let filters = req.query ?? {};
-    if (req.user.role == "teacher" && filters?.courseId == undefined) {
+    if (req?.user?.role == "teacher" && filters?.courseId == undefined) {
       const teacher = await teachers.findOne({ id: req.user.id });
       let courseIds = JSON.parse(teacher.courseIds);
       // let packageIds = JSON.parse(teacher.courseIds).map((value, index) => value.split("+").pop());

@@ -3,28 +3,28 @@ const { PASSWORD } = require("../config/db");
 const { brand, nodemailerUser, nodemailerPassword, baseURL, nodemailerPort, baseUrl, nodemailerHost } = require("../variables");
 
 //mailer config
-const transporter = createTransport({
-  host: nodemailerHost,
-  port: nodemailerPort,
-  secure: false,
-  secureConnection: false,
-  auth: {
-    user: nodemailerUser,
-    pass: nodemailerPassword
-
-  },
-  tls: {
-    rejectUnAuthorized: true
-  }
-});
-
 // const transporter = createTransport({
-//   service:'gmail',
+//   host: nodemailerHost,
+//   port: nodemailerPort,
+//   secure: false,
+//   secureConnection: false,
 //   auth: {
 //     user: nodemailerUser,
-//     pass: nodemailerPassword,
+//     pass: nodemailerPassword
+
 //   },
+//   tls: {
+//     rejectUnAuthorized: true
+//   }
 // });
+
+const transporter = createTransport({
+  service:'gmail',
+  auth: {
+    user: nodemailerUser,
+    pass: nodemailerPassword,
+  },
+});
 
 const mailOptions = (data) => {
   const { name, email, courseTitle, batch, type } = data;
