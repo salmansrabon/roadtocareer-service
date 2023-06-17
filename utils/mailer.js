@@ -1,6 +1,6 @@
 const { createTransport } = require("nodemailer");
 const { PASSWORD } = require("../config/db");
-const { brand, nodemailerUser, nodemailerPassword, baseURL, nodemailerPort, baseUrl, nodemailerHost } = require("../variables");
+const { brand, nodemailerUser, nodemailerPassword, resetURL, nodemailerPort, nodemailerHost } = require("../variables");
 
 //mailer config
 // const transporter = createTransport({
@@ -44,7 +44,7 @@ const mailOptions = (data) => {
   else if (type == "sendResetLink") {
     const { pcToken } = data;
     options.subject = `${brand} reset link.`;
-    options.html = `Dear ${name},<br/>Here is your reset link for ${courseTitle}.<a href = "${baseURL}/reset-password/${pcToken}">Click here to reset your password</a><br><br>Regards<br>${brand}<br>Whatsapp: 01686606909<br>Fb Group: https://www.facebook.com/groups/roadtosdet`
+    options.html = `Dear ${name},<br/>Here is your reset link for ${courseTitle}.<a href = "${resetURL}/reset-password/${pcToken}">Click here to reset your password</a><br><br>Regards<br>${brand}<br>Whatsapp: 01686606909<br>Fb Group: https://www.facebook.com/groups/roadtosdet`
   }
   else if (type == "sendPayment") {
     const { installmentNo, installmentAmount, paidAmount, discount, due } = data;
