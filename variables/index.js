@@ -9,7 +9,8 @@ const dbUser = process.env.DB_USER;
 const dbPassword = process.env.DB_PASSWORD;
 const nodemailerUser = process.env.NODEMAILER_USER;
 const nodemailerPassword = process.env.NODEMAILER_PASSWORD;
-const baseUrl = process.env.BASE_URL || "localhost:3000"
+const baseURL = process.env.BASE_URL || "localhost:3000"
+const resetURL = process.env.RESET_URL || "http://localhost:3000"
 const nodemailerHost = process.env.NODEMAILER_HOST
 const nodemailerPort = process.env.NODEMAILER_PORT
 console.log({ dbHost });
@@ -26,5 +27,6 @@ module.exports = {
   nodemailerPassword,
   nodemailerHost,
   nodemailerPort,
-  baseUrl
+  baseURL,
+  resetURL
 };
