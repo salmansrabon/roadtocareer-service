@@ -39,7 +39,8 @@ publicRouter.get("/v1/studentSuccess", studentsController.getStudentSuccessStori
 publicRouter.get("/v1/teacherSuccess", teachersController.getTeacherSuccessStories);
 publicRouter.get("/v1/ourTeams", teachersController.getTeams);
 
-
+publicRouter.get("/v1/pub/teachers", teachersController.getPublicTeachers);
+publicRouter.get("/v1/pub/teacher/:id", teachersController.getPublicTeacher);
 
 privateRouter.get("/v1/auth", userController.isAuthenticated);
 privateRouter.put("/v1/changePassword", userController.changePassword);

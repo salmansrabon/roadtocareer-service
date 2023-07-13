@@ -8,7 +8,7 @@ const variables = require("../variables");
 // Public Controllers
 const getPublicTeacher = async (req, res) => {
   const filters = req.query;
-  const response = await teachers.findOne({ ...filters });
+  const response = await teachers.findOne({ ...filters },);
   if (isEmpty(response)) {
     throw customError({
       code: 404,
@@ -55,7 +55,6 @@ const getTeacher = async (req, res) => {
 const getAllTeachers = async (req, res) => {
   const filters = req.query ?? {};
   const response = await teachers.findAll({ ...filters });
-
   if (isEmpty(response.rows)) {
     throw customError({
       code: 404,
