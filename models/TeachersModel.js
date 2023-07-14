@@ -79,7 +79,7 @@ const findAll = async (
   page = 1,
   other = null,
   order = [
-    ["createdAt", "DESC"],
+    ["createdAt", "ASC"],
     ["updatedAt", "DESC"],
   ]
 ) => {
