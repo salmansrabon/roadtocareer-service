@@ -20,10 +20,10 @@ const PORT = appPort || 8000;
 app.use(express.static(path.join(__dirname, "public")));
 
 // middlewires
-// app.use(cors());
-app.use(cors({
-    origin: 'https://roadtocareer-service.roadtocareer.net'
-}));
+app.use(cors());
+// app.use(cors({
+//     origin: 'https://roadtocareer-service.roadtocareer.net'
+// }));
 app.use(logger("dev"));
 // app.use(express.json());
 // app.use(express.urlencoded({ extended: true }));
