@@ -33,6 +33,10 @@ const reviewsSchema = sequelize.define("reviews", {
     type: DataTypes.STRING,
     allowNull: true,
   },
+  university: {
+    type: DataTypes.STRING,
+    allowNull: true,
+  },
   facebook: {
     type: DataTypes.STRING,
     allowNull: true,

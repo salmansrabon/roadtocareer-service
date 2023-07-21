@@ -21,6 +21,8 @@ const signUp = async (req, res) => {
     passingYear = "",
     package,
     role = "student",
+    knowMe,
+    shareSomething,
   } = req.body;
   let raw_pass = password;
   email = email.toLowerCase();
@@ -86,6 +88,8 @@ const signUp = async (req, res) => {
       mobile,
       email,
       passingYear,
+      knowMe,
+      shareSomething,
       batch: course.batch,
       courseTitle: course.courseTitle,
     });
@@ -97,7 +101,8 @@ const signUp = async (req, res) => {
       batch: course.batch,
       type: "enroll",
     });
-  } else {
+  }
+  else {
     let user = await User.findOne({ email, role });
     if (!isEmpty(user)) {
       throw customError({
@@ -136,6 +141,7 @@ const signUp = async (req, res) => {
   res.status(200).send({
     message: "User signed up successfully",
     data: response,
+    // data: req.body,
   });
 };
 

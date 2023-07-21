@@ -119,6 +119,14 @@ const studentsSchema = sequelize.define("students", {
   designation:{
     type:DataTypes.STRING,
     allowNull:true
+  },
+  knowMe:{
+    type:DataTypes.STRING,
+    allowNull:true,
+  },
+  shareSomething: {
+    type:DataTypes.STRING,
+    allowNull:true,
   }
 });
 

@@ -42,6 +42,8 @@ const signupSchema = Joi.object({
     not: Joi.exist(),
     then: Joi.required(),
   }),
+  knowMe: Joi.string().required(),
+  shareSomething: Joi.string().allow(""),
 });
 
 const coursesSchema = Joi.object({
