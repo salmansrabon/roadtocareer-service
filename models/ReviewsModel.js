@@ -53,6 +53,10 @@ const reviewsSchema = sequelize.define("reviews", {
     type: DataTypes.BOOLEAN,
     defaultValue: false,
   },
+  priority: {
+    type: DataTypes.INTEGER,
+    defaultValue: 0,
+  }
 });
 
 const findOne = async (filters = {}, attributes = null) => {

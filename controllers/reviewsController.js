@@ -21,6 +21,7 @@ const getPublicReview = async (req, res) => {
 
 const getPublicReviews = async (req, res) => {
   const filters = req.query || {};
+  const sortByPriorityDescending = (a, b) => b.priority - a.priority;
   const response = await reviews.findAll({ ...filters });
   if (isEmpty(response.rows)) {
     throw customError({
@@ -28,11 +29,13 @@ const getPublicReviews = async (req, res) => {
       message: "No reviews found",
     });
   }
+  response.rows.sort(sortByPriorityDescending);
   res.status(200).send({
     message: "Reviews fetched successfully",
     data: response,
   });
 };
+
 
 // Private Controllers
 const getReview = async (req, res) => {
@@ -51,8 +54,27 @@ const getReview = async (req, res) => {
   });
 };
 
+// const getAllReviews = async (req, res) => {
+//   const filters = req.query ?? {};
+//   const response = await reviews.findAll({ ...filters });
+
+//   if (isEmpty(response.rows)) {
+//     throw customError({
+//       code: 404,
+//       message: "No Reviews found",
+//     });
+//   }
+//   res.status(200).send({
+//     message: "Reviews fetched successfully",
+//     data: response,
+//   });
+// };
+
 const getAllReviews = async (req, res) => {
   const filters = req.query ?? {};
+
+  const sortByPriorityDescending = (a, b) => b.priority - a.priority;
+
   const response = await reviews.findAll({ ...filters });
 
   if (isEmpty(response.rows)) {
@@ -61,11 +83,16 @@ const getAllReviews = async (req, res) => {
       message: "No Reviews found",
     });
   }
+
+  response.rows.sort(sortByPriorityDescending);
+
   res.status(200).send({
     message: "Reviews fetched successfully",
     data: response,
   });
 };
+
+
 
 const addReview = async (req, res) => {
   //   const availReviews = await reviews.findOne({id:req.id})
