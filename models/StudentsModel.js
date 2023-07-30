@@ -114,8 +114,11 @@ const studentsSchema = sequelize.define("students", {
   linkedin:{
     type:DataTypes.STRING,
     allowNull:true
-  }
-  ,
+  },
+  github:{
+    type:DataTypes.STRING,
+    allowNull:true
+  },
   designation:{
     type:DataTypes.STRING,
     allowNull:true
@@ -127,7 +130,11 @@ const studentsSchema = sequelize.define("students", {
   shareSomething: {
     type:DataTypes.STRING,
     allowNull:true,
-  }
+  },
+  certificate:{
+    type:DataTypes.STRING,
+    allowNull:true,
+  },
 });
 
 const findOne = async (filters = {}, attributes = null) => {

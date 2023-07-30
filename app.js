@@ -9,31 +9,23 @@ const logger = require("morgan");
 const Logger = require("./utils/logger");
 
 const { appPort } = require("./variables");
-const { publicRouter, privateRouter, adminAccessRouter } = require("./routes");
 const { auth, errorHandler} = require("./middlewires");
 const { withAuth } = require("./middlewires/withAuth");
 
 const app = express();
-
+app.use(cors());
 const PORT = appPort || 8000;
 
+const { publicRouter, privateRouter, adminAccessRouter } = require("./routes");
 app.use(express.static(path.join(__dirname, "public")));
-
-// middlewires
-app.use(cors());
-// app.use(cors({
-//     origin: 'https://roadtocareer-service.roadtocareer.net'
-// }));
 app.use(logger("dev"));
-// app.use(express.json());
-// app.use(express.urlencoded({ extended: true }));
+
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 // app.use(multer().array())
 
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    // Replace this with your own logic to get the user ID
     const destinationFolder = `./public/tempDir`;
     // Check if destination folder exists
     if (!fs.existsSync(destinationFolder)) {
@@ -72,6 +64,31 @@ app.post("/upload-image", withAuth, upload.single("image"), (req, res) => {
     .catch((err) => {
       res.status(500).send({ message: "Error movoing image" });
     });
+});
+app.post("/upload-certificate", upload.single("certificate"), (req, res) => {
+  // If the file was uploaded successfully, send a success response
+  let dir = req.body.destination;
+  let certificateName = req.file.filename;
+  let dest_path = "./public/images/" + dir + "/";
+  if (!fs.existsSync(dest_path)) {
+    fs.mkdirSync(dest_path, { recursive: true });
+  }
+  if (typeof req.body?.previous !== undefined) {
+    fs.unlink(`./public/images/${dir}/${req.body.previous}`, (err) => {
+      if (err) console.log(err);
+      console.log(`Successfully deleted ./public/images/${dir}/${req.body.previous}`);
+    });
+  }
+
+  fs.rename("./public/tempDir/" + certificateName, dest_path + certificateName, (err) => {
+    if (err) {
+      console.log("Error moving certificate:", err);
+      res.status(500).send({ message: "Error moving certificate" });
+    } else {
+      console.log("Certificate moved successfully!");
+      res.send({ message: "Certificate uploaded successfully" });
+    }
+  });
 });
 // routers
 app.use(publicRouter);
