@@ -14,6 +14,10 @@ const packagesSchema = sequelize.define("packages", {
     type: DataTypes.STRING,
     allowNull: false,
   },
+    installment: {
+    type: DataTypes.STRING,
+    allowNull: false,
+  },
   studentFee: {
     type: DataTypes.INTEGER,
     allowNull: false,
