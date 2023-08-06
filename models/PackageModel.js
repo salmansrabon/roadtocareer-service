@@ -14,10 +14,6 @@ const packagesSchema = sequelize.define("packages", {
     type: DataTypes.STRING,
     allowNull: false,
   },
-    installment: {
-    type: DataTypes.STRING,
-    allowNull: false,
-  },
   studentFee: {
     type: DataTypes.INTEGER,
     allowNull: false,
@@ -27,6 +23,14 @@ const packagesSchema = sequelize.define("packages", {
     allowNull: false,
     defaultValue:0
   },
+  installment: {
+    type: DataTypes.STRING,
+    allowNull: true,
+  },
+isEnrollment: {
+    type: DataTypes.BOOLEAN,
+    allowNull: false,
+}
 });
 
 const findOne = async (filters = {}, attributes = null) => {
