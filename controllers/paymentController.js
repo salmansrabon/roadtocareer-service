@@ -40,16 +40,33 @@ const getPayment = async (req, res) => {
 };
 
 const getAllPayments = async (req, res) => {
+  let input = {...req?.query};
+  input.filterRef = null;
+  let query = null;
   let response = [];
-  if (req?.query?.showDues == 'true'){
-      response = await sequelize.query(
-        "SELECT * from payments where studentId in (SELECT studentId FROM payments GROUP by studentId HAVING SUM(installmentAmount)-sum(discount)-sum(paidAmount) >0)",
-        { type: QueryTypes.SELECT }
-      );
-      response = {rows:response}
-   
-  } else {
+  if(input?.showDues == 'true'){
+    if(input?.batch){
+      query = `SELECT * from payments where studentId in (SELECT studentId FROM payments GROUP by studentId HAVING SUM(installmentAmount)-sum(discount)-sum(paidAmount) >0) and batch = ${Number(input?.batch)}`
+    }
+    else{
+      query = `SELECT * from payments where studentId in (SELECT studentId FROM payments GROUP by studentId HAVING SUM(installmentAmount)-sum(discount)-sum(paidAmount) >0)`
+    }
+    if (input?.studentId) {
+      query += ` AND studentId = '${input?.studentId}'`;
+    }
+    if (input?.name) {
+      query += ` AND name LIKE '%${input?.name}%'`;
+    }
+    response = await sequelize.query(
+      query,
+      { type: QueryTypes.SELECT }
+    );
+
+    response = {rows:response}
+    response.count = response.rows.length;
+  }else{
     response = await Payment.findAll({ ...req?.query});
+    response.count = response.length;
   }
 
   res.status(200).send({
@@ -57,6 +74,25 @@ const getAllPayments = async (req, res) => {
     data: response,
   });
 };
+
+// const getAllPayments = async (req, res) => {
+//   let response = [];
+//   if (req?.query?.showDues == 'true'){
+//       response = await sequelize.query(
+//         "SELECT * from payments where studentId in (SELECT studentId FROM payments GROUP by studentId HAVING SUM(installmentAmount)-sum(discount)-sum(paidAmount) >0)",
+//         { type: QueryTypes.SELECT }
+//       );
+//       response = {rows:response}
+   
+//   } else {
+//     response = await Payment.findAll({ ...req?.query});
+//   }
+
+//   res.status(200).send({
+//     message: "All payments fetched successfully",
+//     data: response,
+//   });
+// };
 
 const addPayment = async (req, res) => {
   // console.log(req.body);
