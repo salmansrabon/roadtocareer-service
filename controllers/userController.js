@@ -147,7 +147,6 @@ const signUp = async (req, res) => {
 
 const signIn = async (req, res) => {
   let student = {};
-  try {
     validator(req.body, "signin");
     let user = "";
     let isValid = true;
@@ -199,11 +198,8 @@ const signIn = async (req, res) => {
       message: "User signed in successfully",
       token: token,
     });
-  } catch (err) {
-    console.log("hiii", err);
-  }
-  
 };
+
 
 const changePassword = async (req, res) => {
   const id = req.body.id.toUpperCase();
