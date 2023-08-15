@@ -18,6 +18,10 @@ const videoSchema = sequelize.define("recordedvideos", {
         type: DataTypes.INTEGER,
         allowNull: false,
       },
+      resources: {
+        type: DataTypes.STRING,
+        allowNull: true,
+      },
       video_url: {
         type: DataTypes.STRING,
         allowNull: false,
