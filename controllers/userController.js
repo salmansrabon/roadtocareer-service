@@ -146,54 +146,63 @@ const signUp = async (req, res) => {
 };
 
 const signIn = async (req, res) => {
-  validator(req.body, "signin");
-  let user = "";
-  let isValid = true;
-  if (isEmail(req.body.email.toLowerCase())) {
-    user = await User.findOne({ email: req.body.email.toLowerCase(), role: "admin" });
-    if (isEmpty(user))
-      user = await User.findOne({ email: req.body.email.toLowerCase(), role: "teacher" });
-  } else {
-    user = await User.findOne({ id: req.body.email.toUpperCase() });
-    const student = await Student.findOne({ id: req.body.email.toUpperCase() });
-    isValid = (student?.isValid || false) && (student?.isEnrolled || false);
-  }
-  if (isEmpty(user))
-    throw customError({
-      code: 404,
-      message: "User not found",
-    });
-
-  if (!isValid)
-    throw customError({
-      code: 404,
-      message: "Unauthorize access.",
-    });
-
-  const validPass = await bcrypt.compare(req.body.password, user.password);
-  if (!validPass)
-    throw customError({
-      code: 403,
-      message: "Wrong password",
-    });
-
-  const token = jwt.sign(
-    {
-      id: user.id,
-      email: user.email,
-      role: user.role,
-      type: "auth",
-    },
-    variables.jwtSecret,
-    {
-      expiresIn: "12h",
+  let student = {};
+  try {
+    validator(req.body, "signin");
+    let user = "";
+    let isValid = true;
+    if (isEmail(req.body.email.toLowerCase())) {
+      user = await User.findOne({ email: req.body.email.toLowerCase(), role: "admin" });
+      if (isEmpty(user))
+        user = await User.findOne({ email: req.body.email.toLowerCase(), role: "teacher" });
+    } else {
+      user = await User.findOne({ id: req.body.email.toUpperCase() });
+      student = await Student.findOne({ id: req.body.email.toUpperCase() });
+      isValid = (student?.isValid || false) && (student?.isEnrolled || false);
     }
-  );
-
-  res.status(200).send({
-    message: "User signed in successfully",
-    token: token,
-  });
+    if (isEmpty(user))
+      throw customError({
+        code: 404,
+        message: "User not found",
+      });
+  
+    if (!isValid)
+      throw customError({
+        code: 404,
+        message: "Unauthorize access.",
+      });
+  
+    const validPass = await bcrypt.compare(req.body.password, user.password);
+    if (!validPass)
+      throw customError({
+        code: 403,
+        message: "Wrong password",
+      });
+      console.log("Hiii", student);
+      console.log("pro", student?.profession)
+    const token = jwt.sign(
+      {
+        id: user.id,
+        email: user.email,
+        role: user.role,
+        courseId: student?.courseId || null,
+        profession: student?.profession || null,
+        type: "auth",
+      },
+      variables.jwtSecret,
+      {
+        expiresIn: "12h",
+      }
+    );
+  
+    res.status(200).send({
+      message: "User signed in successfully",
+      token: token,
+    });
+  } catch (err) {
+    console.log("hiii", err);
+  }
+  
 };
 
 const changePassword = async (req, res) => {

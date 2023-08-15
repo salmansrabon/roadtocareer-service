@@ -8,5 +8,6 @@ module.exports = {
   assignmentsController: require("./assignmentsController"),
   quizesController: require("./quizesController"),
   teachersController:require("./teachersController"),
-  reviewsController:require("./reviewsController")
+  reviewsController:require("./reviewsController"),
+  recordedVideoController: require("./recordedVideoController")
 };

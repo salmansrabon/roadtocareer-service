@@ -12,6 +12,7 @@ const {
   quizesController,
   teachersController,
   reviewsController,
+  recordedVideoController
 } = require("./controllers");
 
 publicRouter.get("/health", (req, res) => res.status(200).send({ status: "OK" }));
@@ -109,6 +110,15 @@ privateRouter.get("/v1/ad/review/:id", reviewsController.getReview);
 privateRouter.post("/v1/review", reviewsController.addReview);
 privateRouter.put("/v1/review/:id", reviewsController.editReview);
 privateRouter.delete('/v1/review/:id', reviewsController.destroyReview);
+
+privateRouter.get("/v1/recordedVideos/byCourseId/:courseId", recordedVideoController.getRecordedVideosByCourseId);
+privateRouter.get("/v1/publicRecordedVideos", recordedVideoController.getPublicRecordedVideos);
+privateRouter.get("/v1/recordedVideos", recordedVideoController.getAllRecordedVideos);
+privateRouter.get("/v1/recordedVideo/:id", recordedVideoController.getRecordedVideo);
+privateRouter.post("/v1/addrecordedVideo", recordedVideoController.addRecordedVideo);
+privateRouter.put("/v1/recordedVideo/:id", recordedVideoController.editRecordedVideo);
+privateRouter.delete("/v1/recordedVideo/:id", recordedVideoController.destroyRecordedVideo);
+
 
 module.exports = {
   publicRouter,
