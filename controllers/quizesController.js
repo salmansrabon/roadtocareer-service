@@ -470,9 +470,12 @@ const getQuizMarks = async (req, res) => {
       let stQuiz = JSON.parse(student.quizAnswers)??{};
       if (id in stQuiz) {
         let resp = {
+          courseTitle: student.courseTitle,
           studentId: student.id,
           courseId: quiz.courseId,
           studentName: student.name,
+          profession: student.profession,
+          university: student.university,
           quizId: quiz.id,
           quizTitle: quiz.title,
           marks: stQuiz[id]?.marks ?? 0,
