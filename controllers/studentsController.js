@@ -3,63 +3,70 @@ const bcrypt = require("bcryptjs");
 const { isEmpty } = require("lodash");
 const { v4: uuidV4 } = require("uuid");
 const { signUp } = require("./userController");
-const { User, Student, Course, teachers } = require("../models");
+const { User, Student, Course, teachers, Payment } = require("../models");
 const { customError, randomPassGenerate, mailer } = require("../utils");
-// const { sequelize } = require("../config");
-// const { Sequelize } = require("sequelize");
-// const { userController } = require(".");
 const { success } = require("../utils/logger");
+
+// const getAllStudents = async (req, res) => {
+//   let filters = req.query ?? {};
+
+//   try {
+//     if (req.user.role == "teacher" && filters?.id == undefined) {
+//       const teacher = await teachers.findOne({ id: req.user.id });
+
+//       let courseIds = JSON.parse(teacher.courseIds);
+//       filters.courseId = courseIds;
+//     }
+//     const students = await Student.findAll({ ...filters });
+
+//     res.status(200).send({
+//       message: "Students fetched successfully",
+//       data: students,
+//     });
+//   } catch (err) {
+//     console.log(err);
+//     throw customError({
+//       code: 404,
+//       message: "CERROR",
+//     });
+//   }
+// };
 
 const getAllStudents = async (req, res) => {
   let filters = req.query ?? {};
-  // console.log(filters)
 
   try {
-    if (req.user.role == "teacher" && filters?.id == undefined) {
+    let studentsData = [];
+
+    if (req.user.role === "teacher" && !filters.id) {
       const teacher = await teachers.findOne({ id: req.user.id });
 
-      let courseIds = JSON.parse(teacher.courseIds);
+      const courseIds = JSON.parse(teacher.courseIds);
       filters.courseId = courseIds;
-      // let courseIds = [];
-      //   JSON.parse(teacher.courseIds).forEach((value) =>
-      //     courseIds.push(value.split("+")[0] + value.split("+")[1])
-      //   );
-
-      //   // console.log(JSON.parse(JSON.stringify(courseIds)));
-      //   // let packageIds = JSON.parse(teacher.courseIds).map((value, index) => value.split("+").pop());
-      //   // filters.courseId = courseIds;
-      //   // console.log(courseIds);
-      //   // filters.packageId = packageIds;
-
-      //   const tempSQL = sequelize
-      //     .getQueryInterface()
-      //     .queryGenerator.selectQuery("students", {
-      //       attributes: ["id"],
-      //       where: sequelize.where(
-      //         sequelize.fn("concat", sequelize.col("courseId"), sequelize.col("package")),
-      //         {
-      //           [Sequelize.Op.in]: courseIds,
-      //         }
-      //       ),
-      //     })
-      //     .slice(0, -1); // to remove the ';' from the end of the SQL
-      //   // console.log("tempsql printing");
-      //   // console.log(tempSQL);
-      //   // MyTable.find({
-      //   //   where: {
-      //   //     id: {
-      //   //       [Sequelize.Op.notIn]: sequelize.literal(`(${tempSQL})`),
-      //   //     },
-      //   //   },
-      //   // });
-      //   filters.id = { [Sequelize.Op.in]: sequelize.literal(`(${tempSQL})`) };
     }
-    const students = await Student.findAll({ ...filters });
 
-    res.status(200).send({
-      message: "Students fetched successfully",
-      data: students,
-    });
+    // Fetch students based on the filters
+    const students = await Student.findAll({ ...filters });
+    console.log(students);
+
+    // Fetch payment details for each student
+    const studentInstances = students.rows;
+
+// Fetch payment details for each student
+const studentsWithPayments = await Promise.all(
+  studentInstances.map(async (student) => {
+    const payments = await Payment.findAll({ studentId: student.id });
+    return {
+      ...student.dataValues, // Use .dataValues to extract raw object
+      payments: payments,
+    };
+  })
+);
+
+res.status(200).send({
+  message: "Students fetched successfully",
+  data: studentsWithPayments,
+});
   } catch (err) {
     console.log(err);
     throw customError({
@@ -68,6 +75,7 @@ const getAllStudents = async (req, res) => {
     });
   }
 };
+
 
 const getStudent = async (req, res) => {
   const { id } = req.query;
