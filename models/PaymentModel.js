@@ -42,6 +42,10 @@ const paymentSchema = sequelize.define("payment", {
   comment: {
     type: DataTypes.STRING,
   },
+  monthName: {
+    type: DataTypes.STRING,
+    allowNull: false,
+  },
 });
 
 const findOne = async (filters = {}, attributes = null) => {

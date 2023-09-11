@@ -39,6 +39,8 @@ const getPayment = async (req, res) => {
   });
 };
 
+
+
 const getAllPayments = async (req, res) => {
   let input = {...req?.query};
   input.filterRef = null;
@@ -64,7 +66,66 @@ const getAllPayments = async (req, res) => {
 
     response = {rows:response}
     response.count = response.rows.length;
-  }else{
+  }
+  else if (input.isUnpaid === 'true') {
+    const currentYear = new Date().getFullYear();
+
+    const monthNames = {
+      January: '01',
+      February: '02',
+      March: '03',
+      April: '04',
+      May: '05',
+      June: '06',
+      July: '07',
+      August: '08',
+      September: '09',
+      October: '10',
+      November: '11',
+      December: '12'
+    };
+
+    const monthValue = monthNames[input.monthName] || null;
+
+    query = `
+     SELECT s.id, s.courseId, s.package, s.batch, s.courseTitle, s.name, s.mobile, s.email, s.university, s.profession, '0001-01-01' as updatedAt
+     FROM students s
+     LEFT JOIN payments p 
+     ON s.id = p.studentId
+     AND s.courseId = p.courseId
+     WHERE YEAR(p.updatedAt) = ${currentYear}
+     `;
+
+    if (monthValue) {
+      query += ` AND (MONTH(p.updatedAt) IS NULL OR MONTH(p.updatedAt) != ${Number(monthValue)})`;
+    } else {
+      query = query.replace(`YEAR(p.updatedAt) = ${currentYear}`, ``);
+      query += ` MONTH(p.updatedAt) IS NULL`;
+    }
+
+    if (input.courseId) {
+      query += ` AND s.courseId = '${input.courseId}'`;
+    }
+
+    if (input.batch) {
+      query += ` AND s.batch = ${Number(input.batch)}`;
+    }
+
+    if (input.studentId) {
+      query += ` AND s.id = '${input.studentId}'`;
+    }
+
+    if (input.name) {
+      query += ` AND s.name LIKE '%${input.name}%'`;
+    }
+
+    query += ` ORDER BY s.batch DESC`
+
+    response = await sequelize.query(query, { type: QueryTypes.SELECT });
+    response = { rows: response };
+    response.count = response.rows.length;
+  } 
+  else{
     response = await Payment.findAll({ ...req?.query});
     response.count = response.length;
   }
