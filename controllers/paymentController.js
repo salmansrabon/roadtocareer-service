@@ -236,7 +236,7 @@ const getAllPayments = async (req, res) => {
 // };
 
 const addPayment = async (req, res) => {
-  // console.log(req.body);
+  console.log(req.body);
   try {
     validator(req.body, "payment");
   } catch (err) {
