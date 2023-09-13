@@ -68,7 +68,7 @@ const getAllPayments = async (req, res) => {
   else if (input.isUnpaid === 'true') {
 
     query = `
-      SELECT s.id, s.courseId, s.package, s.batch, s.courseTitle, s.name, s.mobile, s.email, s.university, s.profession, COALESCE(p.updatedAt, '00001-01-01') as updatedAt
+      SELECT s.id, s.courseId, s.package, s.batch, s.courseTitle, s.name, s.mobile, s.email, s.university, s.profession, COALESCE(p.updatedAt, '0001-01-01') as updatedAt
       FROM students s
       LEFT JOIN payments p 
       ON s.id = p.studentId
