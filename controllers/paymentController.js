@@ -73,7 +73,7 @@ const getAllPayments = async (req, res) => {
       LEFT JOIN payments p 
       ON s.id = p.studentId
       AND s.courseId = p.courseId
-      WHERE`;
+      WHERE s.isEnrolled=1`;
 
     if (input.studentId) {
       query += ` AND s.id = '${input.studentId}'`;
