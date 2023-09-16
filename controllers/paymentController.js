@@ -69,41 +69,14 @@ const getAllPayments = async (req, res) => {
 
     query = `
       SELECT s.id, s.courseId, s.package, s.batch, s.courseTitle, s.name, s.mobile, s.email, s.university, s.profession, COALESCE(p.updatedAt, '0001-01-01') as updatedAt
-      FROM students s
-      LEFT JOIN payments p 
-      ON s.id = p.studentId
-      AND s.courseId = p.courseId
-      WHERE s.isEnrolled=1`;
-
-    if (input.studentId) {
-      query += ` AND s.id = '${input.studentId}'`;
-    }
-
-    if (input.name) {
-      query += ` AND s.name LIKE '%${input.name}%'`;
-    }
-
-    if (input.courseId) {
-      query += ` AND s.courseId = '${input.courseId}'`;
-    }
-
-    if (input.batch) {
-      query += ` AND s.batch = ${Number(input.batch)}`;
-    }
+      FROM students s 
+      LEFT JOIN payments p ON s.id = p.studentId`;
 
     if (input.monthName) {
       if (input.courseId) {
-        query += ` AND (MONTH(p.updatedAt) IS NULL OR p.due > 0) AND s.id NOT IN (SELECT p2.studentId FROM payments p2 WHERE MONTHNAME(p2.updatedAt) = '${input.monthName}' AND p2.courseId = '${input.courseId}')`;
-      } else {
-        query += ` AND (MONTH(p.updatedAt) IS NULL OR p.due > 0) AND s.id NOT IN (SELECT p2.studentId FROM payments p2 WHERE MONTHNAME(p2.updatedAt) = '${input.monthName}')`;
+        query += ` AND p.monthName = '${input.monthName}' WHERE s.courseId='${input.courseId}' AND s.isEnrolled=1 AND p.courseId IS NULL `;
       }
-    } else {
-      query += ` AND (MONTH(p.updatedAt) IS NULL OR p.due > 0)`;
     }
-
-    query = query.replace(`WHERE AND`, `WHERE`);
-    query += ` ORDER BY s.courseId DESC, s.batch DESC, p.due DESC`;
-
     console.log(query)
 
     response = await sequelize.query(query, { type: QueryTypes.SELECT });
