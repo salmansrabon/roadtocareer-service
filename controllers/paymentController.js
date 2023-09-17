@@ -40,15 +40,15 @@ const getPayment = async (req, res) => {
 };
 
 const getAllPayments = async (req, res) => {
-  let input = {...req?.query};
+  let input = { ...req?.query };
   input.filterRef = null;
   let query = null;
   let response = [];
-  if(input?.showDues == 'true'){
-    if(input?.batch){
+  if (input?.showDues == 'true') {
+    if (input?.batch) {
       query = `SELECT * from payments where studentId in (SELECT studentId FROM payments GROUP by studentId HAVING SUM(installmentAmount)-sum(discount)-sum(paidAmount) >0) and batch = ${Number(input?.batch)}`
     }
-    else{
+    else {
       query = `SELECT * from payments where studentId in (SELECT studentId FROM payments GROUP by studentId HAVING SUM(installmentAmount)-sum(discount)-sum(paidAmount) >0)`
     }
     if (input?.studentId) {
@@ -62,10 +62,29 @@ const getAllPayments = async (req, res) => {
       { type: QueryTypes.SELECT }
     );
 
-    response = {rows:response}
+    response = { rows: response }
     response.count = response.rows.length;
-  }else{
-    response = await Payment.findAll({ ...req?.query});
+  }
+  else if (input.isUnpaid === 'true') {
+
+    query = `
+      SELECT s.id, s.courseId, s.package, s.batch, s.courseTitle, s.name, s.mobile, s.email, s.university, s.profession, COALESCE(p.updatedAt, '0001-01-01') as updatedAt
+      FROM students s 
+      LEFT JOIN payments p ON s.id = p.studentId`;
+
+    if (input.monthName) {
+      if (input.courseId) {
+        query += ` AND p.monthName = '${input.monthName}' WHERE s.courseId='${input.courseId}' AND s.isEnrolled=1 AND p.courseId IS NULL `;
+      }
+    }
+    console.log(query)
+
+    response = await sequelize.query(query, { type: QueryTypes.SELECT });
+    response = { rows: response };
+    response.count = response.rows.length;
+  }
+  else {
+    response = await Payment.findAll({ ...req?.query });
     response.count = response.length;
   }
 
@@ -74,6 +93,101 @@ const getAllPayments = async (req, res) => {
     data: response,
   });
 };
+
+// const getAllPayments = async (req, res) => {
+//   let input = {...req?.query};
+//   input.filterRef = null;
+//   let query = null;
+//   let response = [];
+//   if(input?.showDues == 'true'){
+//     if(input?.batch){
+//       query = `SELECT * from payments where studentId in (SELECT studentId FROM payments GROUP by studentId HAVING SUM(installmentAmount)-sum(discount)-sum(paidAmount) >0) and batch = ${Number(input?.batch)}`
+//     }
+//     else{
+//       query = `SELECT * from payments where studentId in (SELECT studentId FROM payments GROUP by studentId HAVING SUM(installmentAmount)-sum(discount)-sum(paidAmount) >0)`
+//     }
+//     if (input?.studentId) {
+//       query += ` AND studentId = '${input?.studentId}'`;
+//     }
+//     if (input?.name) {
+//       query += ` AND name LIKE '%${input?.name}%'`;
+//     }
+//     response = await sequelize.query(
+//       query,
+//       { type: QueryTypes.SELECT }
+//     );
+
+//     response = {rows:response}
+//     response.count = response.rows.length;
+//   }
+//   else if (input.isUnpaid === 'true') {
+//     const currentYear = new Date().getFullYear();
+
+//     const monthNames = {
+//       January: '01',
+//       February: '02',
+//       March: '03',
+//       April: '04',
+//       May: '05',
+//       June: '06',
+//       July: '07',
+//       August: '08',
+//       September: '09',
+//       October: '10',
+//       November: '11',
+//       December: '12'
+//     };
+
+//     const monthValue = monthNames[input.monthName] || null;
+
+//     query = `
+//      SELECT s.id, s.courseId, s.package, s.batch, s.courseTitle, s.name, s.mobile, s.email, s.university, s.profession, '0001-01-01' as updatedAt
+//      FROM students s
+//      LEFT JOIN payments p 
+//      ON s.id = p.studentId
+//      AND s.courseId = p.courseId
+//      WHERE YEAR(p.updatedAt) = ${currentYear}
+//      `;
+
+//     if (monthValue) {
+//       query += ` AND (MONTH(p.updatedAt) IS NULL OR MONTH(p.updatedAt) != ${Number(monthValue)})`;
+//     } else {
+//       query = query.replace(`YEAR(p.updatedAt) = ${currentYear}`, ``);
+//       query += ` MONTH(p.updatedAt) IS NULL`;
+//     }
+
+//     if (input.courseId) {
+//       query += ` AND s.courseId = '${input.courseId}'`;
+//     }
+
+//     if (input.batch) {
+//       query += ` AND s.batch = ${Number(input.batch)}`;
+//     }
+
+//     if (input.studentId) {
+//       query += ` AND s.id = '${input.studentId}'`;
+//     }
+
+//     if (input.name) {
+//       query += ` AND s.name LIKE '%${input.name}%'`;
+//     }
+
+//     query += ` ORDER BY s.batch DESC`
+
+//     response = await sequelize.query(query, { type: QueryTypes.SELECT });
+//     response = { rows: response };
+//     response.count = response.rows.length;
+//   } 
+//   else{
+//     response = await Payment.findAll({ ...req?.query});
+//     response.count = response.length;
+//   }
+
+//   res.status(200).send({
+//     message: "All payments fetched successfully",
+//     data: response,
+//   });
+// };
 
 // const getAllPayments = async (req, res) => {
 //   let response = [];
@@ -95,7 +209,7 @@ const getAllPayments = async (req, res) => {
 // };
 
 const addPayment = async (req, res) => {
-  // console.log(req.body);
+  console.log(req.body);
   try {
     validator(req.body, "payment");
   } catch (err) {

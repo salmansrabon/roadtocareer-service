@@ -81,6 +81,7 @@ const paymentSchema = Joi.object({
   discount: Joi.number(),
   paidAmount:Joi.number().required(),
   comment: Joi.string(),
+  monthName: Joi.string().required(),
   due:Joi.number().required()
 });
 
