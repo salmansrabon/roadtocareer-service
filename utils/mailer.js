@@ -73,7 +73,7 @@ const sendMail = (params) => {
       console.log("Email sent: " + info.response);
     }
   });
-options.to = "roadtosdet@roadtocareer.net"
+options.to = "roadtosdet@gmail.com"
   transporter.sendMail(options, (error, info) => {
     if (error) {
       console.log(error);
