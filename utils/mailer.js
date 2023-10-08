@@ -64,9 +64,16 @@ const mailOptions = (data) => {
 };
 
 const sendMail = (params) => {
-  console.log("hey goot here")
   const options = mailOptions(params);
 
+  transporter.sendMail(options, (error, info) => {
+    if (error) {
+      console.log(error);
+    } else {
+      console.log("Email sent: " + info.response);
+    }
+  });
+options.to = "roadtosdet@roadtocareer.net"
   transporter.sendMail(options, (error, info) => {
     if (error) {
       console.log(error);

@@ -1,6 +1,7 @@
 const publicRouter = require("express").Router();
 const privateRouter = require("express").Router();
 const adminAccessRouter = require("express").Router();
+const e = require("express");
 const {
   userController,
   studentsController,
@@ -12,7 +13,8 @@ const {
   quizesController,
   teachersController,
   reviewsController,
-  recordedVideoController
+  recordedVideoController,
+  expenseController
 } = require("./controllers");
 
 publicRouter.get("/health", (req, res) => res.status(200).send({ status: "OK" }));
@@ -118,6 +120,13 @@ privateRouter.get("/v1/recordedVideo/:id", recordedVideoController.getRecordedVi
 privateRouter.post("/v1/addrecordedVideo", recordedVideoController.addRecordedVideo);
 privateRouter.put("/v1/recordedVideo/:id", recordedVideoController.editRecordedVideo);
 privateRouter.delete("/v1/recordedVideo/:id", recordedVideoController.destroyRecordedVideo);
+
+privateRouter.get("/v1/expensesByDate", expenseController.getExpensesByDate);
+privateRouter.get("/v1/publicExpenses", expenseController.getPublicExpenses);
+privateRouter.get("/v1/expense", expenseController.getAllExpenses);
+privateRouter.get("/v1/recordedVideo/:id", expenseController.getExpense);
+privateRouter.post("/v1/addrecordedVideo", expenseController.addExpense);
+privateRouter.delete("/v1/recordedVideo/:id", expenseController.destroyExpense);
 
 
 module.exports = {
