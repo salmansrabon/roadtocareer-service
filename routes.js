@@ -12,7 +12,8 @@ const {
   quizesController,
   teachersController,
   reviewsController,
-  recordedVideoController
+  recordedVideoController,
+  expenseController
 } = require("./controllers");
 
 publicRouter.get("/health", (req, res) => res.status(200).send({ status: "OK" }));
