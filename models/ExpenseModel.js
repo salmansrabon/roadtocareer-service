@@ -34,7 +34,6 @@ const findOne = async (filters = {}, attributes = null) => {
 
 const findAll = async (filters = {}, attributes = null, limit = null, page = 1, order = [['createdAt', 'DESC'], ['updatedAt', 'DESC']]) => {
   const offset = limit ? (page - 1) * limit : null;
-  //return data in descending order
   const response = await expenseSchema.findAndCountAll({
     where: { ...filters },
     ...(attributes && { attributes }),

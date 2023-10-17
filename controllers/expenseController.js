@@ -1,6 +1,6 @@
 const { customError } = require("../utils");
 const { findOne, findAll, create, update, destroy } = require("./../models/ExpenseModel");
-
+const { Op } = require("sequelize");
 
 const getExpenseByCourseId = async (req, res) => {
   
@@ -11,34 +11,42 @@ const getPublicExpense = async (req, res) => {
 };
 
 const getExpensesByDate = async (req, res) => {
+  try {
     const filters = req.query || {};
-    
-    const endDate = filters.end_date ? new Date(filters.end_date) : new Date();
-    
-    const startDate = new Date(endDate);
-    startDate.setDate(endDate.getDate() - 1); 
-    
-    
-    const dateFilter = {
-      date: {
-        [Op.between]: [startDate, endDate],
-      },
-    };
-    
+  
+    const endDate = filters?.end_date ? new Date(filters.end_date) : new Date();
+    const startDate = filters?.start_date ? new Date(filters.start_date) : new Date();
+  
+    // Check if both start_date and end_date are provided to apply the date filter
+    const dateFilter = filters.start_date && filters.end_date
+      ? {
+          date: {
+            [Op.between]: [startDate, endDate],
+          },
+      }
+      : {}; // If not, use an empty filter to show all expenses
+  
     const response = await findAll(dateFilter);
   
     if (response.count === 0) {
-      throw customError({
-        code: 404,
-        message: "No expense found within the specified date range",
+      res.status(404).send({
+        error: "No expense found within the specified date range",
+      });
+    } else {
+      res.status(200).send({
+        message: "Expense fetched successfully",
+        count: response.count,
+        data: response.rows,
       });
     }
-    res.status(200).send({
-      message: "Expense fetched successfully",
-      count: response.count,
-      data: response.rows,
+  } catch (error) {
+    console.error(error);
+    res.status(500).send({
+      error: "Internal Server Error",
     });
-  };
+  }
+};
+
 
 const getPublicExpenses = async (req, res) => {
   const filters = req.query || {};

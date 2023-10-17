@@ -123,10 +123,10 @@ privateRouter.delete("/v1/recordedVideo/:id", recordedVideoController.destroyRec
 
 privateRouter.get("/v1/expensesByDate", expenseController.getExpensesByDate);
 privateRouter.get("/v1/publicExpenses", expenseController.getPublicExpenses);
-privateRouter.get("/v1/expense", expenseController.getAllExpenses);
-privateRouter.get("/v1/recordedVideo/:id", expenseController.getExpense);
-privateRouter.post("/v1/addrecordedVideo", expenseController.addExpense);
-privateRouter.delete("/v1/recordedVideo/:id", expenseController.destroyExpense);
+privateRouter.get("/v1/expenses", expenseController.getAllExpenses);
+privateRouter.get("/v1/expense/:id", expenseController.getExpense);
+privateRouter.post("/v1/expense", expenseController.addExpense);
+privateRouter.delete("/v1/expense/:id", expenseController.destroyExpense);
 
 
 module.exports = {
