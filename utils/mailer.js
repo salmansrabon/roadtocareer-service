@@ -66,6 +66,8 @@ const mailOptions = (data) => {
 const sendMail = (params) => {
   const options = mailOptions(params);
 
+  const adminOptions = { ...options };
+
   transporter.sendMail(options, (error, info) => {
     if (error) {
       console.log(error);
@@ -73,14 +75,26 @@ const sendMail = (params) => {
       console.log("Email sent: " + info.response);
     }
   });
-options.to = "roadtosdet@gmail.com"
-  transporter.sendMail(options, (error, info) => {
+  adminOptions.to = "roadtosdet@gmail.com";
+  adminOptions.subject = "A new student is enrolled.";
+  adminOptions.html = `
+  <h2>A new student is enrolled</h2>
+  <ul>
+      <li><strong>Name:</strong> ${params.name}</li>
+      <li><strong>Email:</strong> ${params.email}</li>
+      <li><strong>Phone Number:</strong> ${params.mobile}</li>
+      <li><strong>University:</strong> ${params.university}</li>
+      <li><strong>Company Name:</strong> ${params.company || 'N/A'}</li>
+      <li><strong>Passing Year:</strong> ${params.passingYear}</li>
+  </ul>
+`;
+
+  transporter.sendMail(adminOptions, (error, info) => {
     if (error) {
       console.log(error);
     } else {
-      console.log("Email sent: " + info.response);
+      console.log("Admin Email sent: " + info.response);
     }
   });
 };
-
 module.exports = { sendMail };

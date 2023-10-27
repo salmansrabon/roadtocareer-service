@@ -99,6 +99,10 @@ const signUp = async (req, res) => {
       email,
       courseTitle: course.courseTitle,
       batch: course.batch,
+      university,
+      mobile,
+      company,
+      passingYear,
       type: "enroll",
     });
   }
