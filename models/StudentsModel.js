@@ -135,6 +135,10 @@ const studentsSchema = sequelize.define("students", {
     type:DataTypes.STRING,
     allowNull:true,
   },
+  access_id:{
+    type:DataTypes.STRING,
+    allowNull:true,
+  }
 });
 
 const findOne = async (filters = {}, attributes = null) => {
