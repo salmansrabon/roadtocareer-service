@@ -6,6 +6,11 @@ const { signUp } = require("./userController");
 const { User, Student, Course, teachers, Payment } = require("../models");
 const { customError, randomPassGenerate, mailer } = require("../utils");
 const { success } = require("../utils/logger");
+const { google } = require('googleapis');
+const fs = require('fs');
+const serviceAccount = require('../service-account.json');
+const jsonData = require('../cred.json');
+const axios = require('axios');
 
 // const getAllStudents = async (req, res) => {
 //   let filters = req.query ?? {};
@@ -364,6 +369,123 @@ const getStudentSuccessStories = async (req, res) => {
     data: stories,
   });
 };
+
+const generateDriveAccessToken = () => {
+  return new Promise((resolve, reject) => {
+    try {
+      const jwtClient = new google.auth.JWT({
+        email: serviceAccount.client_email,
+        key: serviceAccount.private_key,
+        scopes: ['https://www.googleapis.com/auth/drive']
+      });
+
+      jwtClient.authorize((err, tokens) => {
+        if (err) {
+          console.error('Error generating access token:', err);
+          return reject(err);
+        }
+
+        if (tokens && tokens.access_token) {
+          fs.writeFileSync('creds.json', JSON.stringify(tokens));
+          console.log('Access token generated and stored in creds.json');
+          resolve(tokens.access_token);
+        } else {
+          const error = new Error('Access token not found');
+          console.error('Error generating access token:', error);
+          reject(error);
+        }
+      });
+    } catch (error) {
+      console.error('Error generating access token:', error);
+      reject(error);
+    }
+  });
+};
+
+const grantFolderAccess = async (req, res) => {
+  try {
+    const { email } = req.body;
+    const folderId = req.params.folderId;
+
+    // Retrieve Access Token
+    let accessToken;
+    try {
+      accessToken = await generateDriveAccessToken();
+      console.log("Access Token:", accessToken);
+    } catch (tokenError) {
+      console.error('Error getting access token:', tokenError);
+      return res.status(500).json({ error: 'Failed to get access token' });
+    }
+
+    // Grant Folder Access
+    try {
+      console.log("Folder ID:", folderId)
+      const response = await axios.post(
+        `https://www.googleapis.com/drive/v3/files/${folderId}/permissions`,
+        {
+          role: 'reader',
+          type: 'user',
+          emailAddress: email,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        }
+      );
+
+      console.log("Google Drive API Response:", response.data);
+      res.status(200).send(response.data);
+    } catch (apiError) {
+      console.error('Error calling Google Drive API:', apiError.response.data.error);
+      res.status(500).json({ error: 'Failed to grant folder access' });
+    }
+  } catch (error) {
+    console.error('Error granting folder access:', error);
+    res.status(500).json({ error: 'Failed to grant folder access' });
+  }
+};
+
+
+const revokeFolderAccess = async (req, res) => {
+  try {
+    const { fileid, permissionid, } = req.params;
+    let accessToken;
+    try {
+      accessToken = await generateDriveAccessToken();
+      console.log("Access Token:", accessToken);
+    } catch (tokenError) {
+      console.error('Error getting access token:', tokenError);
+      return res.status(500).json({ error: 'Failed to get access token' });
+    }
+
+    try {
+      const response = await axios.post(
+        `https://www.googleapis.com/drive/v3/files/${fileid}/permissions/${permissionid}`,
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        }
+      );
+      console.log("Google Drive API Response:", response.data);
+
+      res.status(200).json({
+        message: `this user revoke successfully`,
+        driveData: response
+      });
+    } catch (apiError) {
+      console.error('Error calling Google Drive API:', apiError);
+      res.status(500).json({ error: 'Failed to revoke folder access' });
+    }
+  } catch (error) {
+    console.error('Error removing folder access:', error);
+    res.status(500).json({ error: 'Failed to remove folder access' });
+  }
+};
+
+
+
 module.exports = {
   getAllStudents,
   getStudent,
@@ -375,4 +497,7 @@ module.exports = {
   checkAttendanceDate,
   addAttandence_Admin,
   getStudentSuccessStories,
+  generateDriveAccessToken,
+  grantFolderAccess,
+  revokeFolderAccess,
 };

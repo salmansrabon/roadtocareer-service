@@ -237,13 +237,6 @@ const addPayment = async (req, res) => {
     student.profession === "Job Holder" ? coursePackage.jobHolderFee : coursePackage.studentFee;
 
   const id = uuidV4();
-  // const payments  = await Payment.findAll({studentId, courseId});
-  // let totalPaid = 0;
-  // if (!isEmpty(payments.rows)){
-  //   for(let row in payments){
-  //     totalPaid += row.paidAmount;
-  //   }
-  // }
   let response = {};
 
   if (isEmpty(payment)) {
@@ -252,8 +245,6 @@ const addPayment = async (req, res) => {
       studentId,
       name: student.name,
       batch: student.batch,
-      // due: due,
-      // paidAmount: installmentAmount - discount,
       ...req.body,
     }).then(() => {
       mailer.sendMail({
@@ -273,8 +264,6 @@ const addPayment = async (req, res) => {
     response = await Payment.update(payment.id, {
       name: student.name,
       batch: student.batch,
-      // due: due,
-      // paidAmount: installmentAmount - discount,
       ...req.body,
     });
   }

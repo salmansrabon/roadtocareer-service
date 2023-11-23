@@ -68,6 +68,9 @@ const coursesSchema = sequelize.define("courses", {
   notice: {
     type: DataTypes.STRING,
   },
+  drive_folder_id: {
+    type: DataTypes.STRING,
+  }
 });
 
 const findOne = async (filters = {}, attributes = null) => {

@@ -58,6 +58,9 @@ privateRouter.delete("/v1/student/:id", studentsController.destroyStudent);
 privateRouter.get("/v1/student/attendance/:id", studentsController.checkAttendanceDate);
 privateRouter.put("/v1/student/attendance/:id", studentsController.addAttandence);
 privateRouter.put("/v1/admin/addAttendance365/:id", studentsController.addAttandence_Admin);
+privateRouter.get("/v1/generate/token", studentsController.generateDriveAccessToken);
+privateRouter.post("/v1/grant-access/:folderId/:courseId/:batchNo", studentsController.grantFolderAccess);
+privateRouter.post("/v1/revoke-access/:fileid/:permissionid", studentsController.revokeFolderAccess);
 
 privateRouter.get("/v1/payments/:studentId/:courseId", paymentController.getPayments);
 privateRouter.get("/v1/payments", paymentController.getAllPayments);
