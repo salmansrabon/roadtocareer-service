@@ -11,6 +11,7 @@ const fs = require('fs');
 const serviceAccount = require('../service-account.json');
 const jsonData = require('../cred.json');
 const axios = require('axios');
+const creds=require('../creds.json');
 
 // const getAllStudents = async (req, res) => {
 //   let filters = req.query ?? {};
@@ -57,21 +58,21 @@ const getAllStudents = async (req, res) => {
     // Fetch payment details for each student
     const studentInstances = students.rows;
 
-// Fetch payment details for each student
-const studentsWithPayments = await Promise.all(
-  studentInstances.map(async (student) => {
-    const payments = await Payment.findAll({ studentId: student.id });
-    return {
-      ...student.dataValues, // Use .dataValues to extract raw object
-      payments: payments,
-    };
-  })
-);
+    // Fetch payment details for each student
+    const studentsWithPayments = await Promise.all(
+      studentInstances.map(async (student) => {
+        const payments = await Payment.findAll({ studentId: student.id });
+        return {
+          ...student.dataValues, // Use .dataValues to extract raw object
+          payments: payments,
+        };
+      })
+    );
 
-res.status(200).send({
-  message: "Students fetched successfully",
-  data: studentsWithPayments,
-});
+    res.status(200).send({
+      message: "Students fetched successfully",
+      data: studentsWithPayments,
+    });
   } catch (err) {
     console.log(err);
     throw customError({
@@ -370,78 +371,72 @@ const getStudentSuccessStories = async (req, res) => {
   });
 };
 
-const generateDriveAccessToken = () => {
-  return new Promise((resolve, reject) => {
-    try {
-      const jwtClient = new google.auth.JWT({
-        email: serviceAccount.client_email,
-        key: serviceAccount.private_key,
-        scopes: ['https://www.googleapis.com/auth/drive']
-      });
+var gToken;
+const generateDriveAccessToken = (req, res) => {
+  const serviceAccount = require('../service-account.json');
 
-      jwtClient.authorize((err, tokens) => {
-        if (err) {
-          console.error('Error generating access token:', err);
-          return reject(err);
-        }
+  // Set up the JWT client using the service account credentials
+  const jwtClient = new google.auth.JWT({
+    email: serviceAccount.client_email,
+    key: serviceAccount.private_key,
+    scopes: ['https://www.googleapis.com/auth/drive'] // Add necessary scopes
+  });
 
-        if (tokens && tokens.access_token) {
-          fs.writeFileSync('creds.json', JSON.stringify(tokens));
-          console.log('Access token generated and stored in creds.json');
-          resolve(tokens.access_token);
-        } else {
-          const error = new Error('Access token not found');
-          console.error('Error generating access token:', error);
-          reject(error);
-        }
-      });
-    } catch (error) {
-      console.error('Error generating access token:', error);
-      reject(error);
+  // Generate an access token
+  jwtClient.authorize((err, tokens) => {
+    if (err) {
+      console.error('Error in authorization:', err);
+      res.status(500).json({ error: 'Internal Server Error' });
+      return;
     }
+
+    // Save the access token to a file
+    fs.writeFileSync('creds.json', JSON.stringify(tokens));
+    console.log('Access token generated and stored in creds.json');
+    gToken=tokens.access_token;
+    res.status(200).json({
+      message: 'Access token generated successfully',
+      token: tokens.access_token
+    });
   });
 };
 
 const grantFolderAccess = async (req, res) => {
   try {
-    const { email } = req.body;
-    const folderId = req.params.folderId;
+    const { role, type, emailAddress } = req.body;
+    const { fileid } = req.params;
 
-    // Retrieve Access Token
-    let accessToken;
-    try {
-      accessToken = await generateDriveAccessToken();
-      console.log("Access Token:", accessToken);
-    } catch (tokenError) {
-      console.error('Error getting access token:', tokenError);
-      return res.status(500).json({ error: 'Failed to get access token' });
-    }
+    // Check if authorization header is present
+    // if (!req.headers.authorization || !req.headers.authorization.startsWith('Bearer ')) {
+    //   return res.status(401).json({ error: 'Unauthorized: Missing or invalid token' });
+    // }
 
-    // Grant Folder Access
-    try {
-      console.log("Folder ID:", folderId)
-      const response = await axios.post(
-        `https://www.googleapis.com/drive/v3/files/${folderId}/permissions`,
-        {
-          role: 'reader',
-          type: 'user',
-          emailAddress: email,
+    // Extract token from header authorization
+    //const token = req.headers.authorization.split(' ')[2];
+
+    const response = await axios.post(
+      `https://www.googleapis.com/drive/v3/files/${fileid}/permissions`,
+      {
+        role,
+        type,
+        emailAddress,
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${creds.access_token}`,
         },
-        {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-          },
-        }
-      );
+      }
+    );
 
-      console.log("Google Drive API Response:", response.data);
-      res.status(200).send(response.data);
-    } catch (apiError) {
-      console.error('Error calling Google Drive API:', apiError.response.data.error);
-      res.status(500).json({ error: 'Failed to grant folder access' });
-    }
+    // Log the API response for debugging
+    console.log('Google Drive API Response:', response.data);
+
+    // Send the response data back to the client
+    res.status(200).send(response.data);
   } catch (error) {
     console.error('Error granting folder access:', error);
+
+    // Send a generic error message if specific error details are unavailable
     res.status(500).json({ error: 'Failed to grant folder access' });
   }
 };
@@ -449,10 +444,11 @@ const grantFolderAccess = async (req, res) => {
 
 const revokeFolderAccess = async (req, res) => {
   try {
-    const { fileid, permissionid, } = req.params;
+    const { fileid, permissionid } = req.params;
     let accessToken;
+
     try {
-      accessToken = await generateDriveAccessToken();
+      accessToken = creds.access_token; // Assuming creds object contains the access token
       console.log("Access Token:", accessToken);
     } catch (tokenError) {
       console.error('Error getting access token:', tokenError);
@@ -460,7 +456,7 @@ const revokeFolderAccess = async (req, res) => {
     }
 
     try {
-      const response = await axios.post(
+      const { data } = await axios.delete(
         `https://www.googleapis.com/drive/v3/files/${fileid}/permissions/${permissionid}`,
         {
           headers: {
@@ -468,14 +464,14 @@ const revokeFolderAccess = async (req, res) => {
           },
         }
       );
-      console.log("Google Drive API Response:", response.data);
+      console.log("Google Drive API Response:", data);
 
       res.status(200).json({
-        message: `this user revoke successfully`,
-        driveData: response
+        message: `User access revoked successfully`,
+        driveData: data // Using 'data' instead of 'response'
       });
     } catch (apiError) {
-      console.error('Error calling Google Drive API:', apiError);
+      console.error('Error calling Google Drive API:', apiError.response.data.error);
       res.status(500).json({ error: 'Failed to revoke folder access' });
     }
   } catch (error) {
@@ -483,6 +479,7 @@ const revokeFolderAccess = async (req, res) => {
     res.status(500).json({ error: 'Failed to remove folder access' });
   }
 };
+
 
 
 
