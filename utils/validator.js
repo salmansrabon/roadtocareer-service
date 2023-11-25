@@ -49,6 +49,7 @@ const signupSchema = Joi.object({
 const coursesSchema = Joi.object({
   courseTitle: Joi.string().required(),
   courseInitial: Joi.string().required(),
+  drive_folder_id: Joi.string().allow(""),
   batch: Joi.number().required(),
   image: Joi.string().allow(""),
   video: Joi.string().min(11).max(11).allow(""),

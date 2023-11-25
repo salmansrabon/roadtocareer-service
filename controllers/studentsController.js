@@ -387,73 +387,6 @@ const generateDriveAccessToken = (req, res) => {
   });
 };
 
-// const grantFolderAccess = async (req, res) => {
-//   try {
-//     const { role, type, emailAddress } = req.body;
-//     const { fileid } = req.params;
-
-//     const response = await axios.post(
-//       `https://www.googleapis.com/drive/v3/files/${fileid}/permissions`,
-//       {
-//         role,
-//         type,
-//         emailAddress,
-//       },
-//       {
-//         headers: {
-//           Authorization: `Bearer ${creds.access_token}`,
-//         },
-//       }
-//     );
-
-//     console.log('Google Drive API Response:', response.data);
-
-//     res.status(200).send(response.data);
-//   } catch (error) {
-//     console.error('Error granting folder access:', error);
-//     res.status(500).json({ error: 'Failed to grant folder access' });
-//   }
-// };
-
-
-// const revokeFolderAccess = async (req, res) => {
-//   try {
-//     const { fileid, permissionid } = req.params;
-//     let accessToken;
-
-//     try {
-//       accessToken = creds.access_token; // Assuming creds object contains the access token
-//       console.log("Access Token:", accessToken);
-//     } catch (tokenError) {
-//       console.error('Error getting access token:', tokenError);
-//       return res.status(500).json({ error: 'Failed to get access token' });
-//     }
-
-//     try {
-//       const { data } = await axios.delete(
-//         `https://www.googleapis.com/drive/v3/files/${fileid}/permissions/${permissionid}`,
-//         {
-//           headers: {
-//             Authorization: `Bearer ${accessToken}`,
-//           },
-//         }
-//       );
-//       console.log("Google Drive API Response:", data);
-
-//       res.status(200).json({
-//         message: `User access revoked successfully`,
-//         driveData: data // Using 'data' instead of 'response'
-//       });
-//     } catch (apiError) {
-//       console.error('Error calling Google Drive API:', apiError.response.data.error);
-//       res.status(500).json({ error: 'Failed to revoke folder access' });
-//     }
-//   } catch (error) {
-//     console.error('Error removing folder access:', error);
-//     res.status(500).json({ error: 'Failed to remove folder access' });
-//   }
-// };
-
 
 
 
@@ -469,6 +402,4 @@ module.exports = {
   addAttandence_Admin,
   getStudentSuccessStories,
   generateDriveAccessToken,
-  // grantFolderAccess,
-  // revokeFolderAccess,
 };
