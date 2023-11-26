@@ -7,31 +7,8 @@ const { User, Student, Course, teachers, Payment } = require("../models");
 const { customError, randomPassGenerate, mailer } = require("../utils");
 const { success } = require("../utils/logger");
 const { google } = require('googleapis');
+const fs=require('fs');
 
-// const getAllStudents = async (req, res) => {
-//   let filters = req.query ?? {};
-
-//   try {
-//     if (req.user.role == "teacher" && filters?.id == undefined) {
-//       const teacher = await teachers.findOne({ id: req.user.id });
-
-//       let courseIds = JSON.parse(teacher.courseIds);
-//       filters.courseId = courseIds;
-//     }
-//     const students = await Student.findAll({ ...filters });
-
-//     res.status(200).send({
-//       message: "Students fetched successfully",
-//       data: students,
-//     });
-//   } catch (err) {
-//     console.log(err);
-//     throw customError({
-//       code: 404,
-//       message: "CERROR",
-//     });
-//   }
-// };
 
 const getAllStudents = async (req, res) => {
   let filters = req.query ?? {};
@@ -367,7 +344,23 @@ const getStudentSuccessStories = async (req, res) => {
 };
 
 const generateDriveAccessToken = (req, res) => {
+  const serviceAccountData={
+    type:process.env.type,
+    project_id:process.env.project_id,
+    private_key_id:process.env.private_key_id,
+    private_key:process.env.private_key.replace(/\\n/g, '\n'),
+    client_email:process.env.client_email,
+    client_id:process.env.client_id,
+    auth_uri:process.env.auth_uri,
+    token_uri:process.env.token_uri,
+    auth_provider_x509_cert_url:process.env.auth_provider_x509_cert_url,
+    client_x509_cert_url:process.env.client_x509_cert_url,
+    universe_domain:process.env.universe_domain
+  }
+  const jsonData = JSON.stringify(serviceAccountData, null, 2);
+  fs.writeFileSync('service-account.json', jsonData);
   const serviceAccount = require('../service-account.json');
+  
 
   const jwtClient = new google.auth.JWT({
     email: serviceAccount.client_email,
