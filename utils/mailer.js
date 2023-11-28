@@ -149,4 +149,12 @@ const sendMail = (params) => {
   console.log(emails)
 };
 
+  transporter.sendMail(adminOptions, (error, info) => {
+    if (error) {
+      console.log(error);
+    } else {
+      console.log("Admin Email sent: " + info.response);
+    }
+  });
+;
 module.exports = { sendMail };

@@ -99,6 +99,10 @@ const signUp = async (req, res) => {
       email,
       courseTitle: course.courseTitle,
       batch: course.batch,
+      university,
+      mobile,
+      company,
+      passingYear,
       type: "enroll",
     });
   }
@@ -198,7 +202,6 @@ const signIn = async (req, res) => {
       message: "User signed in successfully",
       token: token,
     });
-  
 };
 
 
