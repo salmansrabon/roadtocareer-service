@@ -9,5 +9,6 @@ module.exports = {
   quizes:require('./QuizesModule'),
   assignments:require('./AssignmentsModel'),
   teachers:require('./TeachersModel'),
-  reviews:require('./ReviewsModel')
+  reviews:require('./ReviewsModel'),
+  expense: require("./ExpenseModel"),
 };

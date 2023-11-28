@@ -30,21 +30,21 @@ const getAllStudents = async (req, res) => {
     // Fetch payment details for each student
     const studentInstances = students.rows;
 
-// Fetch payment details for each student
-const studentsWithPayments = await Promise.all(
-  studentInstances.map(async (student) => {
-    const payments = await Payment.findAll({ studentId: student.id });
-    return {
-      ...student.dataValues, // Use .dataValues to extract raw object
-      payments: payments,
-    };
-  })
-);
+    // Fetch payment details for each student
+    const studentsWithPayments = await Promise.all(
+      studentInstances.map(async (student) => {
+        const payments = await Payment.findAll({ studentId: student.id });
+        return {
+          ...student.dataValues, // Use .dataValues to extract raw object
+          payments: payments,
+        };
+      })
+    );
 
-res.status(200).send({
-  message: "Students fetched successfully",
-  data: studentsWithPayments,
-});
+    res.status(200).send({
+      message: "Students fetched successfully",
+      data: studentsWithPayments,
+    });
   } catch (err) {
     console.log(err);
     throw customError({

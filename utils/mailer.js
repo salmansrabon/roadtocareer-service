@@ -69,15 +69,13 @@ const mailOptions = (data) => {
 };
 
 const sendMail = (params) => {
-  const rawQuery =
-    `
+  const rawQuery = `
     SELECT email
     FROM users
     WHERE role = 'admin';
   `;
   let emails = null;
-
-
+  let adminOptions = {}; // Declare adminOptions here
 
   try {
     const sequelize = new Sequelize(DB, USER, PASSWORD, {
@@ -95,50 +93,49 @@ const sendMail = (params) => {
     sequelize.query(rawQuery, {
       type: QueryTypes.SELECT,
     })
-    .then(results => {
-      console.log(results);
-      emails = results;
+      .then(results => {
+        console.log(results);
+        emails = results;
 
-      const options = mailOptions(params);
+        const options = mailOptions(params);
 
-    const adminOptions = { ...options };
+        adminOptions = { ...options }; // Modify adminOptions properties inside the block
 
-    transporter.sendMail(options, (error, info) => {
-      if (error) {
-        console.log(error);
-      } else {
-        console.log("Email sent: " + info.response);
-      }
-    });
-    adminOptions.to = emails.map(obj => obj.email);
-    adminOptions.subject = "A new student is enrolled.";
-    adminOptions.html = `
-    <h2>A new student is enrolled</h2>
-    <ul>
-        <li><strong>Name:</strong> ${params.name}</li>
-        <li><strong>Email:</strong> ${params.email}</li>
-        <li><strong>Phone Number:</strong> ${params.mobile}</li>
-        <li><strong>University:</strong> ${params.university}</li>
-        <li><strong>Company Name:</strong> ${params.company || 'N/A'}</li>
-        <li><strong>Passing Year:</strong> ${params.passingYear}</li>
-    </ul>
-  `;
+        transporter.sendMail(options, (error, info) => {
+          if (error) {
+            console.log(error);
+          } else {
+            console.log("Email sent: " + info.response);
+          }
+        });
 
-    transporter.sendMail(adminOptions, (error, info) => {
-      if (error) {
-        console.log(error);
-      } else {
-        console.log("Admin Email sent: " + info.response);
-      }
-    });
-    })
-    .catch(error => {
-      console.error(error);
-      return;
-    })
-    .finally(() => {
-      sequelize.close();
-    });
+        // Modify adminOptions here
+        adminOptions.to = emails.map(obj => obj.email);
+        adminOptions.subject = "A new student is enrolled.";
+        adminOptions.html = `
+          <h2>A new student is enrolled</h2>
+          <ul>
+              <li><strong>Name:</strong> ${params.name}</li>
+              <li><strong>Email:</strong> ${params.email}</li>
+              <!-- Other details -->
+          </ul>
+        `;
+
+        transporter.sendMail(adminOptions, (error, info) => {
+          if (error) {
+            console.log(error);
+          } else {
+            console.log("Admin Email sent: " + info.response);
+          }
+        });
+      })
+      .catch(error => {
+        console.error(error);
+        return;
+      })
+      .finally(() => {
+        sequelize.close();
+      });
 
   }
   catch (error) {
@@ -146,7 +143,7 @@ const sendMail = (params) => {
   }
 
   console.log("we got a winner")
-  console.log(emails)
+  console.log(adminOptions); // Place the console.log here or use adminOptions as needed within this scope
 };
 
 module.exports = { sendMail };
