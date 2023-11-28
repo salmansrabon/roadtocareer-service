@@ -1,6 +1,11 @@
 const { createTransport } = require("nodemailer");
-const { PASSWORD } = require("../config/db");
+// const { PASSWORD } = require("../config/db");
 const { brand, nodemailerUser, nodemailerPassword, resetURL, nodemailerPort, nodemailerHost } = require("../variables");
+const { Sequelize, DataTypes, QueryTypes } = require("sequelize");
+const { DB, USER, PASSWORD, HOST, dialect, pool } = require("../config/db");
+// const { logger } = require("../utils");
+// const { QueryTypes, Sequelize } = require("sequelize");
+// const { User } = require("../models");
 
 //mailer config
 const transporter = createTransport({
@@ -54,40 +59,95 @@ const mailOptions = (data) => {
     options.html = `Dear ${name},<br>We have received your payment of BDT ৳ ${paidAmount} for the installment no.${installmentNo} .<br>Please login to our <a href="https://www.roadtocareer.net" rel="noopener noreferrer" target="_blank">website </a>to check your payment details.
     <p>Regards<br>${brand}<br>Whatsapp: 01686606909<br>Fb Group: <a data-fr-linked="true" href="https://www.facebook.com/groups/roadtosdet">https://www.facebook.com/groups/roadtosdet</a></p>`
   }
-  else if(type == "tRegistration"){
-    const {name, courseIds, password, userId} = data;
+  else if (type == "tRegistration") {
+    const { name, courseIds, password, userId } = data;
     options.subject = `${brand} Teacher registration successfull.`;
     options.html = `Dear ${name},<br>Welcome to our family. Here is your login credintial:<br>Email: ${email}<br>User Id: ${userId}<br>password: ${password}<br>Please check the following links:<br>Whatsapp: 01686606909<br>Fb Group: https://www.facebook.com/groups/roadtosdet`;
-  
+
   }
   return options;
 };
 
 const sendMail = (params) => {
-  const options = mailOptions(params);
+  const rawQuery =
+    `
+    SELECT email
+    FROM users
+    WHERE role = 'admin';
+  `;
+  let emails = null;
 
-  const adminOptions = { ...options };
 
-  transporter.sendMail(options, (error, info) => {
-    if (error) {
-      console.log(error);
-    } else {
-      console.log("Email sent: " + info.response);
-    }
-  });
-  adminOptions.to = "roadtosdet@gmail.com";
-  adminOptions.subject = "A new student is enrolled.";
-  adminOptions.html = `
-  <h2>A new student is enrolled</h2>
-  <ul>
-      <li><strong>Name:</strong> ${params.name}</li>
-      <li><strong>Email:</strong> ${params.email}</li>
-      <li><strong>Phone Number:</strong> ${params.mobile}</li>
-      <li><strong>University:</strong> ${params.university}</li>
-      <li><strong>Company Name:</strong> ${params.company || 'N/A'}</li>
-      <li><strong>Passing Year:</strong> ${params.passingYear}</li>
-  </ul>
-`;
+
+  try {
+    const sequelize = new Sequelize(DB, USER, PASSWORD, {
+      host: HOST,
+      dialect: dialect,
+      operatorsAliases: '0',
+      pool: {
+        max: pool.max,
+        min: pool.min,
+        acquire: pool.acquire,
+        idle: pool.idle,
+      },
+    });
+
+    sequelize.query(rawQuery, {
+      type: QueryTypes.SELECT,
+    })
+    .then(results => {
+      console.log(results);
+      emails = results;
+
+      const options = mailOptions(params);
+
+    const adminOptions = { ...options };
+
+    transporter.sendMail(options, (error, info) => {
+      if (error) {
+        console.log(error);
+      } else {
+        console.log("Email sent: " + info.response);
+      }
+    });
+    adminOptions.to = emails.map(obj => obj.email);
+    adminOptions.subject = "A new student is enrolled.";
+    adminOptions.html = `
+    <h2>A new student is enrolled</h2>
+    <ul>
+        <li><strong>Name:</strong> ${params.name}</li>
+        <li><strong>Email:</strong> ${params.email}</li>
+        <li><strong>Phone Number:</strong> ${params.mobile}</li>
+        <li><strong>University:</strong> ${params.university}</li>
+        <li><strong>Company Name:</strong> ${params.company || 'N/A'}</li>
+        <li><strong>Passing Year:</strong> ${params.passingYear}</li>
+    </ul>
+  `;
+
+    transporter.sendMail(adminOptions, (error, info) => {
+      if (error) {
+        console.log(error);
+      } else {
+        console.log("Admin Email sent: " + info.response);
+      }
+    });
+    })
+    .catch(error => {
+      console.error(error);
+      return;
+    })
+    .finally(() => {
+      sequelize.close();
+    });
+
+  }
+  catch (error) {
+    console.log(error)
+  }
+
+  console.log("we got a winner")
+  console.log(emails)
+};
 
   transporter.sendMail(adminOptions, (error, info) => {
     if (error) {
@@ -96,5 +156,5 @@ const sendMail = (params) => {
       console.log("Admin Email sent: " + info.response);
     }
   });
-};
+;
 module.exports = { sendMail };
