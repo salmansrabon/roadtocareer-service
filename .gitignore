@@ -4,3 +4,4 @@ node_modules
 .old_env
 .remote_env
 public/*
+service-account.json
