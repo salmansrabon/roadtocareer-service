@@ -1,11 +1,7 @@
 const { createTransport } = require("nodemailer");
-// const { PASSWORD } = require("../config/db");
 const { brand, nodemailerUser, nodemailerPassword, resetURL, nodemailerPort, nodemailerHost } = require("../variables");
 const { Sequelize, DataTypes, QueryTypes } = require("sequelize");
 const { DB, USER, PASSWORD, HOST, dialect, pool } = require("../config/db");
-// const { logger } = require("../utils");
-// const { QueryTypes, Sequelize } = require("sequelize");
-// const { User } = require("../models");
 
 //mailer config
 const transporter = createTransport({
@@ -22,14 +18,6 @@ const transporter = createTransport({
     rejectUnAuthorized: true
   }
 });
-
-// const transporter = createTransport({
-//   service:'gmail',
-//   auth: {
-//     user: nodemailerUser,
-//     pass: nodemailerPassword,
-//   },
-// });
 
 const mailOptions = (data) => {
   const { name, email, courseTitle, batch, type } = data;
@@ -75,7 +63,7 @@ const sendMail = (params) => {
     WHERE role = 'admin';
   `;
   let emails = null;
-  let adminOptions = {}; // Declare adminOptions here
+  let adminOptions = {};
 
   try {
     const sequelize = new Sequelize(DB, USER, PASSWORD, {
@@ -99,7 +87,9 @@ const sendMail = (params) => {
 
         const options = mailOptions(params);
 
-        adminOptions = { ...options }; // Modify adminOptions properties inside the block
+        if (params.type === "enroll") {
+          adminOptions = { ...options };
+        }
 
         transporter.sendMail(options, (error, info) => {
           if (error) {
@@ -109,7 +99,6 @@ const sendMail = (params) => {
           }
         });
 
-        // Modify adminOptions here
         adminOptions.to = emails.map(obj => obj.email);
         adminOptions.subject = "A new student is enrolled.";
         adminOptions.html = `
@@ -141,9 +130,85 @@ const sendMail = (params) => {
   catch (error) {
     console.log(error)
   }
-
-  console.log("we got a winner")
-  console.log(adminOptions); // Place the console.log here or use adminOptions as needed within this scope
 };
 
 module.exports = { sendMail };
+
+
+// const sendMail = (params) => {
+//   const rawQuery = `
+//     SELECT email
+//     FROM users
+//     WHERE role = 'admin';
+//   `;
+//   let emails = null;
+//   let adminOptions = {}; // Declare adminOptions here
+
+//   try {
+//     const sequelize = new Sequelize(DB, USER, PASSWORD, {
+//       host: HOST,
+//       dialect: dialect,
+//       operatorsAliases: '0',
+//       pool: {
+//         max: pool.max,
+//         min: pool.min,
+//         acquire: pool.acquire,
+//         idle: pool.idle,
+//       },
+//     });
+
+//     sequelize.query(rawQuery, {
+//       type: QueryTypes.SELECT,
+//     })
+//       .then(results => {
+//         console.log(results);
+//         emails = results;
+
+//         const options = mailOptions(params);
+
+//         adminOptions = { ...options }; // Modify adminOptions properties inside the block
+
+//         transporter.sendMail(options, (error, info) => {
+//           if (error) {
+//             console.log(error);
+//           } else {
+//             console.log("Email sent: " + info.response);
+//           }
+//         });
+
+//         // Modify adminOptions here
+//         adminOptions.to = emails.map(obj => obj.email);
+//         adminOptions.subject = "A new student is enrolled.";
+//         adminOptions.html = `
+//           <h2>A new student is enrolled</h2>
+//           <ul>
+//               <li><strong>Name:</strong> ${params.name}</li>
+//               <li><strong>Email:</strong> ${params.email}</li>
+//               <!-- Other details -->
+//           </ul>
+//         `;
+
+//         transporter.sendMail(adminOptions, (error, info) => {
+//           if (error) {
+//             console.log(error);
+//           } else {
+//             console.log("Admin Email sent: " + info.response);
+//           }
+//         });
+//       })
+//       .catch(error => {
+//         console.error(error);
+//         return;
+//       })
+//       .finally(() => {
+//         sequelize.close();
+//       });
+
+//   }
+//   catch (error) {
+//     console.log(error)
+//   }
+
+//   console.log("we got a winner")
+//   console.log(adminOptions); // Place the console.log here or use adminOptions as needed within this scope
+// };
