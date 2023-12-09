@@ -70,7 +70,8 @@ const getAllPayments = async (req, res) => {
     query = `
       SELECT s.id, s.courseId, s.package, s.batch, s.courseTitle, s.name, s.mobile, s.email, s.university, s.profession, COALESCE(p.updatedAt, '0001-01-01') as updatedAt
       FROM students s 
-      LEFT JOIN payments p ON s.id = p.studentId`;
+      LEFT JOIN payments p ON s.id = p.studentId
+      WHERE s.isEnrolled = 1`;
 
     if (input.monthName) {
       if (input.courseId) {
