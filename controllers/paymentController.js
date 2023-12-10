@@ -69,9 +69,9 @@ const getAllPayments = async (req, res) => {
 
     query = `
     SELECT s.id, s.courseId, s.package, s.batch, s.courseTitle, s.name, s.mobile, s.email, s.university, s.profession, COALESCE(p.updatedAt, '0001-01-01') as updatedAt
-    FROM students s 
-    LEFT JOIN payments p ON s.id = p.studentId AND p.monthName = 'December' AND p.courseId IS NULL
-    WHERE s.courseId = 'sdet20230901' AND s.isEnrolled = 1`;
+FROM students s 
+LEFT JOIN payments p ON s.id = p.studentId AND p.courseId = s.courseId
+WHERE s.isEnrolled = 1`;
 
     if (input.monthName) {
       if (input.courseId) {
@@ -198,7 +198,7 @@ const getAllPayments = async (req, res) => {
 //         { type: QueryTypes.SELECT }
 //       );
 //       response = {rows:response}
-   
+
 //   } else {
 //     response = await Payment.findAll({ ...req?.query});
 //   }
