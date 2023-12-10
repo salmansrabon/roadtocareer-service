@@ -73,10 +73,8 @@ FROM students s
 LEFT JOIN payments p ON s.id = p.studentId AND p.courseId = s.courseId
 WHERE s.isEnrolled = 1`;
 
-    if (input.monthName) {
-      if (input.courseId) {
-        query += ` AND p.monthName = '${input.monthName}' WHERE s.courseId='${input.courseId}' AND s.isEnrolled=1 AND p.courseId IS NULL `;
-      }
+    if (input.monthName && input.courseId) {
+      query += ` AND p.monthName = '${input.monthName}' AND s.courseId = '${input.courseId}' AND p.courseId IS NULL`;
     }
     console.log(query)
 
