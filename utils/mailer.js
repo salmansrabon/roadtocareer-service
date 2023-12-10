@@ -87,10 +87,6 @@ const sendMail = (params) => {
 
         const options = mailOptions(params);
 
-        if (params.type === "enroll") {
-          adminOptions = { ...options };
-        }
-
         transporter.sendMail(options, (error, info) => {
           if (error) {
             console.log(error);
@@ -99,23 +95,37 @@ const sendMail = (params) => {
           }
         });
 
-        adminOptions.to = emails.map(obj => obj.email);
-        adminOptions.subject = "A new student is enrolled.";
-        adminOptions.html = `
+        // Construct adminOptions separately
+        const adminEmails = emails.map(obj => obj.email);
+        const adminSubject = "A new student is enrolled.";
+        const adminHTML = `
           <h2>A new student is enrolled</h2>
           <ul>
               <li><strong>Name:</strong> ${params.name}</li>
               <li><strong>Email:</strong> ${params.email}</li>
-              <!-- Other details -->
+              <li><strong>Phone Number:</strong> ${params.mobile}</li>
+              <li><strong>University:</strong> ${params.university}</li>
+              <li><strong>Company Name:</strong> ${params.company || 'N/A'}</li>
+              <li><strong>Passing Year:</strong> ${params.passingYear}</li>
           </ul>
         `;
 
-        transporter.sendMail(adminOptions, (error, info) => {
-          if (error) {
-            console.log(error);
-          } else {
-            console.log("Admin Email sent: " + info.response);
-          }
+        // Sending separate emails to each admin email address
+        adminEmails.forEach(adminEmail => {
+          const adminMailOptions = {
+            from: nodemailerUser,
+            to: adminEmail,
+            subject: adminSubject,
+            html: adminHTML,
+          };
+
+          transporter.sendMail(adminMailOptions, (error, info) => {
+            if (error) {
+              console.log(error);
+            } else {
+              console.log(`Admin Email sent to ${adminEmail}: ` + info.response);
+            }
+          });
         });
       })
       .catch(error => {

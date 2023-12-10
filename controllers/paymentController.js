@@ -68,14 +68,13 @@ const getAllPayments = async (req, res) => {
   else if (input.isUnpaid === 'true') {
 
     query = `
-      SELECT s.id, s.courseId, s.package, s.batch, s.courseTitle, s.name, s.mobile, s.email, s.university, s.profession, COALESCE(p.updatedAt, '0001-01-01') as updatedAt
-      FROM students s 
-      LEFT JOIN payments p ON s.id = p.studentId`;
+    SELECT s.id, s.courseId, s.package, s.batch, s.courseTitle, s.name, s.mobile, s.email, s.university, s.profession, COALESCE(p.updatedAt, '0001-01-01') as updatedAt
+FROM students s 
+LEFT JOIN payments p ON s.id = p.studentId AND p.courseId = s.courseId
+WHERE s.isEnrolled = 1`;
 
-    if (input.monthName) {
-      if (input.courseId) {
-        query += ` AND p.monthName = '${input.monthName}' WHERE s.courseId='${input.courseId}' AND s.isEnrolled=1 AND p.courseId IS NULL `;
-      }
+    if (input.monthName && input.courseId) {
+      query += ` AND p.monthName = '${input.monthName}' AND s.courseId = '${input.courseId}' AND p.courseId IS NULL`;
     }
     console.log(query)
 
@@ -197,7 +196,7 @@ const getAllPayments = async (req, res) => {
 //         { type: QueryTypes.SELECT }
 //       );
 //       response = {rows:response}
-   
+
 //   } else {
 //     response = await Payment.findAll({ ...req?.query});
 //   }
