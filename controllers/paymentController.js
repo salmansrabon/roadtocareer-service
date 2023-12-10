@@ -68,12 +68,12 @@ const getAllPayments = async (req, res) => {
   else if (input.isUnpaid === 'true') {
 
     query = `
-  SELECT s.id, s.courseId, s.package, s.batch, s.courseTitle, s.name, s.mobile, s.email, s.university, s.profession, COALESCE(p.updatedAt, '0001-01-01') AS updatedAt FROM students s LEFT JOIN payments p ON s.id = p.studentId AND p.courseId = s.courseId AND p.monthName = ${input?.monthName} WHERE s.isEnrolled = 1`;
+  SELECT s.id, s.courseId, s.package, s.batch, s.courseTitle, s.name, s.mobile, s.email, s.university, s.profession, COALESCE(p.updatedAt, '0001-01-01') AS updatedAt FROM students s LEFT JOIN payments p ON s.id = p.studentId AND p.courseId = s.courseId AND p.monthName = '${input?.monthName}' WHERE s.isEnrolled = 1`;
 
     const replacements = { monthName: input.monthName }; // Object to hold parameter values
 
     if (input.monthName && input.courseId) {
-      query += ` AND s.courseId = ${input?.courseId} AND p.courseId IS NULL`;
+      query += ` AND s.courseId = '${input?.courseId}' AND p.courseId IS NULL`;
       replacements.courseId = input.courseId; // Add courseId to replacements object
     }
 
