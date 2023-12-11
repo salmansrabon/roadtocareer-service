@@ -156,6 +156,16 @@ const sendMail = async (params) => {
         });
       }
     }
+    else if (params.type === 'sendPass') {
+      // Sending credentials email to student
+      transporter.sendMail(options, (error, info) => {
+        if (error) {
+          console.log(error);
+        } else {
+          console.log("Credentials Email sent to student: " + info.response);
+        }
+      });
+    }
 
     sequelize.close();
   } catch (error) {
