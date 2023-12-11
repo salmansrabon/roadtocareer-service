@@ -56,15 +56,7 @@ const mailOptions = (data) => {
   return options;
 };
 
-const sendMail = (params) => {
-  const rawQuery = `
-    SELECT email
-    FROM users
-    WHERE role = 'admin';
-  `;
-  let emails = null;
-  let adminOptions = {};
-
+const sendMail = async (params) => {
   try {
     const sequelize = new Sequelize(DB, USER, PASSWORD, {
       host: HOST,
@@ -78,39 +70,74 @@ const sendMail = (params) => {
       },
     });
 
-    sequelize.query(rawQuery, {
+    const rawQuery = `
+      SELECT * FROM users WHERE ROLE='admin';
+    `;
+
+    const adminEmailsResult = await sequelize.query(rawQuery, {
       type: QueryTypes.SELECT,
-    })
-      .then(results => {
-        console.log(results);
-        emails = results;
+    });
 
-        const options = mailOptions(params);
+    const adminEmails = adminEmailsResult.map(admin => admin.email);
 
-        transporter.sendMail(options, (error, info) => {
-          if (error) {
-            console.log(error);
-          } else {
-            console.log("Email sent: " + info.response);
-          }
-        });
+    const options = mailOptions(params);
 
-        // Construct adminOptions separately
-        const adminEmails = emails.map(obj => obj.email);
-        const adminSubject = "A new student is enrolled.";
-        const adminHTML = `
-          <h2>A new student is enrolled</h2>
-          <ul>
+    if (params.type === 'enroll') {
+      // Sending enrollment email to student
+      transporter.sendMail(options, (error, info) => {
+        if (error) {
+          console.log(error);
+        } else {
+          console.log("Enrollment Email sent to student: " + info.response);
+        }
+      });
+
+      // Sending enrollment email to admin
+      if (Array.isArray(adminEmails) && adminEmails.length > 0) {
+        adminEmails.forEach(adminEmail => {
+          const adminOptions = {
+            from: nodemailerUser,
+            to: adminEmail,
+            subject: `${brand} Enrollment Notification`,
+            html:`<h2>A new student enrolled</h2>
+            <ul>
               <li><strong>Name:</strong> ${params.name}</li>
               <li><strong>Email:</strong> ${params.email}</li>
               <li><strong>Phone Number:</strong> ${params.mobile}</li>
               <li><strong>University:</strong> ${params.university}</li>
               <li><strong>Company Name:</strong> ${params.company || 'N/A'}</li>
               <li><strong>Passing Year:</strong> ${params.passingYear}</li>
-          </ul>
-        `;
+          </ul>`,
+          };
 
-        // Sending separate emails to each admin email address
+          transporter.sendMail(adminOptions, (error, info) => {
+            if (error) {
+              console.log(error);
+            } else {
+              console.log(`Enrollment Email sent to admin ${adminEmail}: ` + info.response);
+            }
+          });
+        });
+      }
+    } else if (params.type === 'sendPayment') {
+      // Sending payment confirmation email to student
+      transporter.sendMail(options, (error, info) => {
+        if (error) {
+          console.log(error);
+        } else {
+          console.log("Payment Confirmation Email sent to student: " + info.response);
+        }
+      });
+
+      // Construct payment confirmation email for admin
+      const adminSubject = `Payment confirmation notification`;
+      const adminHTML = `
+        <h2>Payment confirmation notification</h2>
+        <p>Dear admin,\n${params.name} completed payment of BDT ${params.paidAmount} for the installment no. ${params.installmentNo}</p>
+      `;
+
+      // Sending payment confirmation email to admin
+      if (Array.isArray(adminEmails) && adminEmails.length > 0) {
         adminEmails.forEach(adminEmail => {
           const adminMailOptions = {
             from: nodemailerUser,
@@ -123,26 +150,24 @@ const sendMail = (params) => {
             if (error) {
               console.log(error);
             } else {
-              console.log(`Admin Email sent to ${adminEmail}: ` + info.response);
+              console.log(`Payment Email sent to admin ${adminEmail}: ` + info.response);
             }
           });
         });
-      })
-      .catch(error => {
-        console.error(error);
-        return;
-      })
-      .finally(() => {
-        sequelize.close();
-      });
+      }
+    }
 
-  }
-  catch (error) {
-    console.log(error)
+    sequelize.close();
+  } catch (error) {
+    console.error(error);
   }
 };
 
 module.exports = { sendMail };
+
+
+
+
 
 
 // const sendMail = (params) => {
