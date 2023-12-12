@@ -45,15 +45,13 @@ const mailOptions = (data) => {
     options.html = `Dear ${name},<br/>Here is your reset link for ${courseTitle}.<a href = "${resetURL}/reset-password/${pcToken}">Click here to reset your password</a><br><br>Regards<br>${brand}<br>Whatsapp: 01686606909<br>Fb Group: https://www.facebook.com/groups/roadtosdet`
   }
   else if (type == "sendPayment") {
-    const { installmentNo, installmentAmount, paidAmount, discount, due } = data;
-    const dueM = due == 0 ? "You have no due for" : `Due amount is ${due} TK for`
-    const discountM = discount == 0 ? "" : `Congratulation, you got a discount of ${discount} TK`
+    const { installmentNo, paidAmount, discount, due } = data;
     options.subject = `${brand} payment confirmation.`;
     options.html = `Dear ${name},<br>We have received your payment of BDT ৳ ${paidAmount} for the installment no.${installmentNo} .<br>Please login to our <a href="https://www.roadtocareer.net" rel="noopener noreferrer" target="_blank">website </a>to check your payment details.
     <p>Regards<br>${brand}<br>Whatsapp: 01686606909<br>Fb Group: <a data-fr-linked="true" href="https://www.facebook.com/groups/roadtosdet">https://www.facebook.com/groups/roadtosdet</a></p>`
   }
   else if (type == "tRegistration") {
-    const { name, courseIds, password, userId } = data;
+    const { name, password, userId } = data;
     options.subject = `${brand} Teacher registration successfull.`;
     options.html = `Dear ${name},<br>Welcome to our family. Here is your login credintial:<br>Email: ${email}<br>User Id: ${userId}<br>password: ${password}<br>Please check the following links:<br>Whatsapp: 01686606909<br>Fb Group: https://www.facebook.com/groups/roadtosdet`;
 
@@ -61,7 +59,8 @@ const mailOptions = (data) => {
   return options;
 };
 
-const sendMail = (params) => {
+const sendMail =async (params) => {
+
   let emails = null;
   let adminOptions = {}; // Declare adminOptions here
 
@@ -78,12 +77,12 @@ const sendMail = (params) => {
       },
     });
     if (params.type === "enroll") {
-      const rawQuery = `
+      const adminQuery = `
     SELECT email
     FROM users
     WHERE role = 'admin';
   `;
-      sequelize.query(rawQuery, {
+      sequelize.query(adminQuery, {
         type: QueryTypes.SELECT,
       })
         .then(results => {
@@ -206,16 +205,23 @@ const sendMail = (params) => {
       }
     }
     else if (params.type === "sendPass") {
+      console.log(params.type)
+      console.log("Entered 'sendPass' block"); // Add this line
       // Logic for sending password email to student
-      const studentOptions = mailOptions(params);
-      transporter.sendMail(studentOptions, (error, info) => {
-        if (error) {
-          console.log(error);
-        } else {
-          console.log("Student Password Email sent: " + info.response);
-        }
-      });
-    } else if (params.type === "sendResetLink") {
+      try {
+        const studentOptions = mailOptions(params);
+        console.log("Student Options:", studentOptions); // Log the studentOptions object
+        const info = await transporter.sendMail(studentOptions);
+        console.log("Student Password Email sent: " + info.response);
+      } catch (error) {
+        console.log("Error sending student password email:", error);
+        const studentOptions = mailOptions(params);
+        console.log("Student Options:", studentOptions); // Log the studentOptions object
+        const info = await transporter.sendMail(studentOptions);
+        console.log("Student Password Email sent: " + info.response);
+      }
+    } 
+    else if (params.type === "sendResetLink") {
       // Logic for sending reset link email to student
       const studentOptions = mailOptions(params);
       transporter.sendMail(studentOptions, (error, info) => {
@@ -240,8 +246,6 @@ const sendMail = (params) => {
   catch (error) {
     console.log(error)
   }
-
-  console.log("we got a winner")
   console.log(adminOptions);
 };
 
