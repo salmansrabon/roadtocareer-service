@@ -1,7 +1,7 @@
 const { createTransport } = require("nodemailer");
 // const { PASSWORD } = require("../config/db");
 const { brand, nodemailerUser, nodemailerPassword, resetURL, nodemailerPort, nodemailerHost } = require("../variables");
-const { Sequelize, DataTypes, QueryTypes } = require("sequelize");
+const { Sequelize, QueryTypes } = require("sequelize");
 const { DB, USER, PASSWORD, HOST, dialect, pool } = require("../config/db");
 // const { logger } = require("../utils");
 // const { QueryTypes, Sequelize } = require("sequelize");
@@ -23,13 +23,6 @@ const transporter = createTransport({
   }
 });
 
-// const transporter = createTransport({
-//   service:'gmail',
-//   auth: {
-//     user: nodemailerUser,
-//     pass: nodemailerPassword,
-//   },
-// });
 
 const mailOptions = (data) => {
   const { name, email, courseTitle, batch, type } = data;
@@ -69,11 +62,6 @@ const mailOptions = (data) => {
 };
 
 const sendMail = (params) => {
-  const rawQuery = `
-    SELECT email
-    FROM users
-    WHERE role = 'admin';
-  `;
   let emails = null;
   let adminOptions = {}; // Declare adminOptions here
 
@@ -89,28 +77,33 @@ const sendMail = (params) => {
         idle: pool.idle,
       },
     });
+    if (params.type === "enroll") {
+      const rawQuery = `
+    SELECT email
+    FROM users
+    WHERE role = 'admin';
+  `;
+      sequelize.query(rawQuery, {
+        type: QueryTypes.SELECT,
+      })
+        .then(results => {
+          console.log(results);
+          emails = results;
 
-    sequelize.query(rawQuery, {
-      type: QueryTypes.SELECT,
-    })
-      .then(results => {
-        console.log(results);
-        emails = results;
+          const options = mailOptions(params);
 
-        const options = mailOptions(params);
+          transporter.sendMail(options, (error, info) => {
+            if (error) {
+              console.log(error);
+            } else {
+              console.log("Email sent: " + info.response);
+            }
+          });
 
-        transporter.sendMail(options, (error, info) => {
-          if (error) {
-            console.log(error);
-          } else {
-            console.log("Email sent: " + info.response);
-          }
-        });
-
-        // Construct adminOptions separately
-        const adminEmails = emails.map(obj => obj.email);
-        const adminSubject = "A new student is enrolled.";
-        const adminHTML = `
+          // Construct adminOptions separately
+          const adminEmails = emails.map(obj => obj.email);
+          const adminSubject = "A new student is enrolled.";
+          const adminHTML = `
           <h2>A new student is enrolled</h2>
           <ul>
               <li><strong>Name:</strong> ${params.name}</li>
@@ -122,39 +115,134 @@ const sendMail = (params) => {
           </ul>
         `;
 
-        // Sending separate emails to each admin email address
-        adminEmails.forEach(adminEmail => {
-          const adminMailOptions = {
-            from: nodemailerUser,
-            to: adminEmail,
-            subject: adminSubject,
-            html: adminHTML,
-          };
+          // Sending separate emails to each admin email address
+          adminEmails.forEach(adminEmail => {
+            const adminMailOptions = {
+              from: nodemailerUser,
+              to: adminEmail,
+              subject: adminSubject,
+              html: adminHTML,
+            };
 
-          transporter.sendMail(adminMailOptions, (error, info) => {
-            if (error) {
-              console.log(error);
-            } else {
-              console.log(`Admin Email sent to ${adminEmail}: ` + info.response);
-            }
+            transporter.sendMail(adminMailOptions, (error, info) => {
+              if (error) {
+                console.log(error);
+              } else {
+                console.log(`Admin Email sent to ${adminEmail}: ` + info.response);
+              }
+            });
           });
+        })
+        .catch(error => {
+          console.error(error);
+          return;
+        })
+        .finally(() => {
+          sequelize.close();
         });
-      })
-      .catch(error => {
-        console.error(error);
-        return;
-      })
-      .finally(() => {
-        sequelize.close();
-      });
 
+    }
+    else if (params.type === "sendPayment") {
+      const adminQuery = `
+        SELECT email
+        FROM users
+        WHERE role = 'admin';
+      `;
+  
+      try {
+        sequelize.query(adminQuery, {
+          type: QueryTypes.SELECT,
+        })
+          .then(results => {
+            console.log(results);
+            const adminEmails = results.map(obj => obj.email);
+  
+            // Logic for sending payment confirmation email to the student
+            const studentOptions = mailOptions(params);
+            transporter.sendMail(studentOptions, (error, info) => {
+              if (error) {
+                console.log(error);
+              } else {
+                console.log("Student Payment Confirmation Email sent: " + info.response);
+              }
+            });
+  
+            // Logic for sending payment confirmation email to each admin
+            const adminSubject = `${brand} New Payment Added`;
+            const adminHTML = `
+              <h2>New Payment Added</h2>
+              <p>A new payment has been received:</p>
+              <ul>
+                <li><strong>Name:</strong> ${params.name}</li>
+                <li><strong>Email:</strong> ${params.email}</li>
+                <li><strong>Installment No:</strong> ${params.installmentNo}</li>
+                <li><strong>Paid Amount:</strong> BDT ${params.paidAmount}</li>
+              </ul>
+            `;
+  
+            adminEmails.forEach(adminEmail => {
+              const adminMailOptions = {
+                from: nodemailerUser,
+                to: adminEmail,
+                subject: adminSubject,
+                html: adminHTML,
+              };
+  
+              transporter.sendMail(adminMailOptions, (error, info) => {
+                if (error) {
+                  console.log(error);
+                } else {
+                  console.log(`Admin Email sent to ${adminEmail}: ` + info.response);
+                }
+              });
+            });
+          })
+          .catch(error => {
+            console.error(error);
+            return;
+          });
+      } catch (error) {
+        console.log(error);
+      }
+    }
+    else if (params.type === "sendPass") {
+      // Logic for sending password email to student
+      const studentOptions = mailOptions(params);
+      transporter.sendMail(studentOptions, (error, info) => {
+        if (error) {
+          console.log(error);
+        } else {
+          console.log("Student Password Email sent: " + info.response);
+        }
+      });
+    } else if (params.type === "sendResetLink") {
+      // Logic for sending reset link email to student
+      const studentOptions = mailOptions(params);
+      transporter.sendMail(studentOptions, (error, info) => {
+        if (error) {
+          console.log(error);
+        } else {
+          console.log("Student Reset Link Email sent: " + info.response);
+        }
+      });
+    } else if (params.type === "tRegistration") {
+      // Logic for sending teacher registration email to student
+      const studentOptions = mailOptions(params);
+      transporter.sendMail(studentOptions, (error, info) => {
+        if (error) {
+          console.log(error);
+        } else {
+          console.log("Teacher Registration Email sent: " + info.response);
+        }
+      });
+    }
   }
   catch (error) {
     console.log(error)
   }
 
   console.log("we got a winner")
-  console.log(adminOptions); // Place the console.log here or use adminOptions as needed within this scope
+  console.log(adminOptions);
 };
 
 module.exports = { sendMail };
