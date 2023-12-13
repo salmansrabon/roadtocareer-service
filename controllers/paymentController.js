@@ -66,30 +66,29 @@ const getAllPayments = async (req, res) => {
     response.count = response.rows.length;
   }
   else if (input.isUnpaid === 'true') {
-
     query = `
-        SELECT s.id, s.courseId, s.package, s.batch, s.courseTitle, s.name, s.mobile, s.email, s.university, s.profession, COALESCE(p.updatedAt, '0001-01-01') AS updatedAt 
-        FROM students s 
-        LEFT JOIN payments p ON s.id = p.studentId AND p.courseId = s.courseId AND p.monthName = :monthName 
-        WHERE s.isEnrolled = 1`;
+    SELECT s.id, s.courseId, s.package, s.batch, s.courseTitle, s.name, s.mobile, s.email, s.university, s.profession, COALESCE(p.updatedAt, '0001-01-01') AS updatedAt 
+    FROM students s 
+    LEFT JOIN payments p ON s.id = p.studentId AND p.courseId = s.courseId AND p.monthName = :monthName 
+    WHERE s.isEnrolled = 1`;
 
-      const replacements = { monthName: input.monthName }; // Object to hold parameter values
+  const replacements = { monthName: input.monthName }; // Object to hold parameter values
 
-      if (input.monthName && input.courseId) {
-        query += ` AND s.courseId = :courseId AND p.courseId IS NULL`;
-        replacements.courseId = input.courseId; // Add courseId to replacements object
-      }
+  if (input.monthName && input.courseId) {
+    query += ` AND s.courseId = :courseId AND p.courseId IS NULL`;
+    replacements.courseId = input.courseId; // Add courseId to replacements object
+  }
 
-      console.log(query); // Log the generated query
+  console.log(query); // Log the generated query
 
-      // Execute the query with Sequelize (assuming sequelize is the Sequelize instance)
-      response = await sequelize.query(query, {
-        replacements: replacements,
-        type: QueryTypes.SELECT
-      });
+  // Execute the query with Sequelize (assuming sequelize is the Sequelize instance)
+  response = await sequelize.query(query, {
+    replacements: replacements,
+    type: QueryTypes.SELECT
+  });
 
-      response = { rows: response };
-      response.count = response.rows.length;
+  response = { rows: response };
+  response.count = response.rows.length;
   }
   else {
     response = await Payment.findAll({ ...req?.query });
