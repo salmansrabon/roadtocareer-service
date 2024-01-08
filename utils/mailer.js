@@ -1,11 +1,7 @@
 const { createTransport } = require("nodemailer");
-// const { PASSWORD } = require("../config/db");
 const { brand, nodemailerUser, nodemailerPassword, resetURL, nodemailerPort, nodemailerHost } = require("../variables");
 const { Sequelize, QueryTypes } = require("sequelize");
 const { DB, USER, PASSWORD, HOST, dialect, pool } = require("../config/db");
-// const { logger } = require("../utils");
-// const { QueryTypes, Sequelize } = require("sequelize");
-// const { User } = require("../models");
 
 //mailer config
 const transporter = createTransport({
