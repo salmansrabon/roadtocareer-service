@@ -90,47 +90,6 @@ const addStudent = async (req, res) => {
   });
 };
 
-const updateStudent = async (req, res) => {
-  const { studentId } = req.params;
-  let msg = " ";
-  let resp = {};
-  if (req.body.isValid) {
-    const st = await Student.findOne({ id: studentId });
-    if (isEmpty(st)) {
-      throw customError({
-        status: 404,
-        message: "Student not found",
-      });
-    }
-    if (!st.isValid) {
-      const user = await User.findOne({ id: studentId });
-      if (!user.password) {
-        let validate = await validateStudent(req, res)
-          .then((payload) => {
-            resp = payload.data;
-          })
-          .catch((data) => {
-            throw customError({
-              code: 404,
-              message: data.message,
-            });
-          });
-
-        msg = " and validated ";
-      }
-    }
-  }
-  const student = await Student.update(studentId, req.body);
-  if (req.body?.email) {
-    await User.update(studentId, { email: req.body.email });
-  }
-  res.status(200).send({
-    message: "Student updated" + msg + "successfully",
-    data: { ...student, ...resp },
-  });
-};
-
-
 // const updateStudent = async (req, res) => {
 //   const { studentId } = req.params;
 //   let msg = " ";
@@ -146,7 +105,7 @@ const updateStudent = async (req, res) => {
 //     if (!st.isValid) {
 //       const user = await User.findOne({ id: studentId });
 //       if (!user.password) {
-//         let validate = await validateStudent2(req, res)
+//         let validate = await validateStudent(req, res)
 //           .then((payload) => {
 //             resp = payload.data;
 //           })
@@ -171,47 +130,88 @@ const updateStudent = async (req, res) => {
 //   });
 // };
 
-// const validateStudent2 = async (req, res) => {
-//   const { studentId } = req.params;
-//   const { name, courseId, email, isValid } = req.body;
 
-//   const password = randomPassGenerate(8);
-//   const salt = await bcrypt.genSalt(10);
-//   const hashPassword = await bcrypt.hash(password, salt);
-//   await Student.update(studentId, { isValid });
-//   await User.update(studentId, { password: hashPassword });
-//   const course = await Course.findOne({ id: courseId });
-//   if (isEmpty(course)) {
-//     // throw customError({
-//     //   code: 404,
-//     //   message: "Course Not Found!",
-//     // });
-//     return {
-//       code: 404,
-//       message: "Course Not Found!",
-//     }
-//   }
+const updateStudent = async (req, res) => {
+  const { studentId } = req.params;
+  let msg = " ";
+  let resp = {};
+  if (req.body.isValid) {
+    const st = await Student.findOne({ id: studentId });
+    if (isEmpty(st)) {
+      throw customError({
+        status: 404,
+        message: "Student not found",
+      });
+    }
+    if (!st.isValid) {
+      const user = await User.findOne({ id: studentId });
+      if (!user.password) {
+        let validate = await validateStudent2(req, res)
+          .then((payload) => {
+            resp = payload.data;
+          })
+          .catch((data) => {
+            throw customError({
+              code: 404,
+              message: data.message,
+            });
+          });
 
-//   // Send the password to the student email address
-//   mailer.sendMail({
-//     name,
-//     email,
-//     studentId,
-//     password,
-//     courseTitle: course.courseTitle,
-//     batch: course.batch,
-//     type: "sendPass",
-//   });
+        msg = " and validated ";
+      }
+    }
+  }
+  const student = await Student.update(studentId, req.body);
+  if (req.body?.email) {
+    await User.update(studentId, { email: req.body.email });
+  }
+  res.status(200).send({
+    message: "Student updated" + msg + "successfully",
+    data: { ...student, ...resp },
+  });
+};
 
-//   // res.status(200).send({
-//   //   message: "Student validated successfully",
-//   //   data: { name, email, studentId, password },
-//   // });
-//   return {
-//     message: "Student validated successfully",
-//     data: { name, email, studentId, password },
-//   }
-// };
+const validateStudent2 = async (req, res) => {
+  const { studentId } = req.params;
+  const { name, courseId, email, isValid } = req.body;
+
+  const password = randomPassGenerate(8);
+  const salt = await bcrypt.genSalt(10);
+  const hashPassword = await bcrypt.hash(password, salt);
+  await Student.update(studentId, { isValid });
+  await User.update(studentId, { password: hashPassword });
+  const course = await Course.findOne({ id: courseId });
+  if (isEmpty(course)) {
+    // throw customError({
+    //   code: 404,
+    //   message: "Course Not Found!",
+    // });
+    return {
+      code: 404,
+      message: "Course Not Found!",
+    }
+  }
+
+  // Send the password to the student email address
+  mailer.sendMail({
+    name,
+    email,
+    studentId,
+    password,
+    courseTitle: course.courseTitle,
+    batch: course.batch,
+    type: "sendPass",
+  });
+
+  // res.status(200).send({
+  //   message: "Student validated successfully",
+  //   data: { name, email, studentId, password },
+  // });
+  return {
+    message: "Student validated successfully",
+    data: { name, email, studentId, password },
+  }
+};
 
 const validateStudent = async (req, res) => {
   const { studentId } = req.params;
