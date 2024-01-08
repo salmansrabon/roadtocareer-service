@@ -305,8 +305,6 @@ const addAttandence_Admin = async (req, res) => {
       state: true,
     },
   });
-
-  // console.log(student.attendances)
 };
 const addQuizAnswer = async (req, res) => {
   const { id } = req.params;
