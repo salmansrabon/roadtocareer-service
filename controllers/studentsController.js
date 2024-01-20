@@ -8,6 +8,7 @@ const { customError, randomPassGenerate, mailer } = require("../utils");
 const { success } = require("../utils/logger");
 const { google } = require('googleapis');
 const fs=require('fs');
+const moment = require('moment');
 
 
 const getAllStudents = async (req, res) => {
@@ -366,8 +367,11 @@ const addAttandence = async (req, res) => {
 
 const addAttandence_Admin = async (req, res) => {
   const { id } = req.params;
-  const date = req.body?.date ? new Date(req.body.date) : new Date();
-  // console.log(date)
+  const dateString = req.body?.date;
+  
+  // Parse the date using moment.js
+  const date = dateString ? moment(dateString, 'DD/MM/YYYY h:mm a') : moment();
+
   const student = await Student.findOne({ id });
   if (isEmpty(student)) {
     throw customError({
@@ -378,17 +382,34 @@ const addAttandence_Admin = async (req, res) => {
 
   req.body.student = student;
 
-  let attendances = [...(JSON.parse(student.attendances) ?? []), date.getTime()];
-  // console.log(attendances);
-  const response = await Student.update(id, { attendances });
+  let attendances = JSON.parse(student.attendances) ?? [];
+
+  // Check if attendance already exists for the given date
+  if (attendances.some(attendanceDate => isSameDay(moment(attendanceDate), date))) {
+    throw customError({
+      code: 400,
+      message: "Attendance already recorded for this date",
+    });
+  }
+
+  // If not, add the new attendance
+  attendances.push(date.toDate().getTime());
+
+  // Update the database with the modified attendance array
+  await Student.update(id, { attendances });
 
   res.status(201).send({
     data: {
-      message: "Attenndance has been added successfully.",
+      message: "Attendance has been added successfully.",
       state: true,
     },
   });
 };
+function isSameDay(date1, date2) {
+  return (
+    date1.isSame(date2, 'day')
+  );
+}
 const addQuizAnswer = async (req, res) => {
   const { id } = req.params;
   const student = await Student.findOne({ id });
