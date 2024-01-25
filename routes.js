@@ -100,7 +100,7 @@ privateRouter.get("/v1/quizes/getMarks/:id", quizesController.getQuizMarks);
 
 privateRouter.post("/v1/quizes", quizesController.addQuiz);
 privateRouter.put("/v1/quizes/:id", quizesController.editQuiz);
-privateRouter.delete("/v1/quiz/:id", quizesController.destroyQuiz);
+privateRouter.delete("/v1/quizes/:id", quizesController.destroyQuiz);
 
 privateRouter.get("/v1/teachers", teachersController.getAllTeachers);
 privateRouter.get("/v1/teacher/:id", teachersController.getTeacher);
