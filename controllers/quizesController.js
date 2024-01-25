@@ -498,21 +498,43 @@ const getQuizMarks = async (req, res) => {
   }
 };
 
+// const destroyQuiz = async (req, res) => {
+//   const { id } = req.params;
+//   const Quiz = await quizes.findOne({ id });
+
+//   if (isEmpty(Quiz)) {
+//     throw customError({
+//       code: 404,
+//       message: "Quize not found",
+//     });
+//   }
+
+//   const response = await quizes.destroy({ id });
+//   res.status(201).send({
+//     message: "Quize deleted sucessfully",
+//   });
+// };
+
 const destroyQuiz = async (req, res) => {
   const { id } = req.params;
   const Quiz = await quizes.findOne({ id });
 
-  if (isEmpty(Quiz)) {
+  if (!Quiz) {
     throw customError({
       code: 404,
-      message: "Quize not found",
+      message: "Quiz not found",
     });
   }
 
   const response = await quizes.destroy({ id });
-  res.status(201).send({
-    message: "Quize deleted sucessfully",
-  });
+  if (response) {
+    res.status(204).send();
+  } else {
+    throw customError({
+      code: 500,
+      message: "Failed to delete quiz",
+    });
+  }
 };
 
 module.exports = {
