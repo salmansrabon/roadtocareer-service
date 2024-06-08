@@ -1,6 +1,7 @@
 const publicRouter = require("express").Router();
 const privateRouter = require("express").Router();
 const adminAccessRouter = require("express").Router();
+const {mailer} = require("./utils")
 const e = require("express");
 const {
   userController,
@@ -18,6 +19,22 @@ const {
 } = require("./controllers");
 
 publicRouter.get("/health", (req, res) => res.status(200).send({ status: "OK" }));
+publicRouter.get("/emailCheck", (req, res)=> {
+  mailer.sendMail({
+    name:"Mohammed",
+    email:"minhajul.abedin.rd@gmail.com",
+    studentId:"12301224",
+    password:"bddd",
+    courseTitle: "course.courseTitle",
+    batch: "course.batch",
+    type: "sendPass",
+  }).then(()=>{
+    res.status(200).send({
+      message: "Student validated successfully",
+    });
+  });
+})
+privateRouter.put("/v1/student/disableAccess", studentsController.disableAceess);
 
 publicRouter.post("/signin", userController.signIn);
 publicRouter.post("/signup", userController.signUp);

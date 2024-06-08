@@ -40,6 +40,7 @@ const getPayment = async (req, res) => {
 };
 
 const getAllPayments = async (req, res) => {
+  try{
   let input = { ...req?.query };
   input.filterRef = null;
   let query = null;
@@ -99,6 +100,13 @@ const getAllPayments = async (req, res) => {
     message: "All payments fetched successfully",
     data: response,
   });
+}catch(error){
+  console.log(error);
+  throw customError({
+    code:404,
+    message:"CError"
+  })
+}
 };
 
 
