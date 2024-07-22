@@ -13,6 +13,7 @@ const { auth, errorHandler} = require("./middlewires");
 const { withAuth } = require("./middlewires/withAuth");
 
 const app = express();
+
 app.use(cors());
 const PORT = appPort || 8000;
 

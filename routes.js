@@ -80,7 +80,7 @@ privateRouter.get("/v1/generate/token", studentsController.generateDriveAccessTo
 privateRouter.get("/v1/payments/:studentId/:courseId", paymentController.getPayments);
 privateRouter.get("/v1/payments", paymentController.getAllPayments);
 privateRouter.post("/v1/payment/:studentId", paymentController.addPayment);
-privateRouter.put("/v1/payment/:studentId", paymentController.editPayment);
+privateRouter.put("/v1/payment/:paymentId", paymentController.editPayment);
 privateRouter.get("/v1/payments/:studentId", paymentController.getPayment);
 privateRouter.delete("/v1/payment/:id", paymentController.destroyPayment);
 

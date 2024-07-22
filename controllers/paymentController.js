@@ -177,7 +177,9 @@ const addPayment = async (req, res) => {
 };
 
 const editPayment = async (req, res) => {
-  const { id } = req.params;
+  console.log('heyy there');
+  const id  = req.params.paymentId;
+  console.log(id);
   const payment = await Payment.findOne({ id });
 
   if (isEmpty(payment)) {
@@ -186,14 +188,22 @@ const editPayment = async (req, res) => {
       message: "Payment not found",
     });
   }
-
+try{
   await Payment.update(id, req.body);
   const updatedPayment = await Payment.findOne({ id });
 
-  req.status(201).send({
+  res.status(201).send({
     message: "Payment updated successfully",
     data: updatedPayment,
   });
+}
+catch(err){
+  console.log(err);
+  throw customError({
+    code: 404,
+    message: "CF Error",
+  });
+}
 };
 
 const destroyPayment = async (req, res) => {
