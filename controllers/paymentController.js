@@ -186,7 +186,7 @@ const editPayment = async (req, res) => {
     throw customError({
       code: 404,
       message: "Payment not found",
-    });
+    });cx
   }
 try{
   await Payment.update(id, req.body);
