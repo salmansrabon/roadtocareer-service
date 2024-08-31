@@ -131,7 +131,6 @@ const addStudent = async (req, res) => {
 
 const updateStudent = async (req, res) => {
   const { studentId } = req.params;
-
   let msg = " ";
   let resp = {};
   if (req.body.isValid) {

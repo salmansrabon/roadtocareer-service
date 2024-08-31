@@ -74,7 +74,7 @@ const checkQuizDate = async (req, res) => {
   }
   let quizStartDate = new Date(quiz.quizStartDate);
   let quizEndDate = new Date(quiz.quizEndDate);
-  let stQuiz = JSON.parse(student.quizAnswers);
+  let stQuiz = JSON.parse(student.quizAnswers) ??{};
   if (date.getTime() >= quizStartDate.getTime()) {
     try {
       if (date.getTime() <= quizEndDate.getTime()) {
@@ -184,7 +184,7 @@ const getRandQuestions = async (req, res) => {
           sAns[quid] = "";
         }
         const student = await Student.findOne({ id: studentId });
-        let stQuiz = JSON.parse(student.quizAnswers);
+        let stQuiz = JSON.parse(student.quizAnswers) ??{};
         stQuiz[id] = { startTime: new Date(), answers: sAns, marks: 0 };
         console.log(stQuiz);
         const upResponse = await Student.update(studentId, { quizAnswers: stQuiz });
@@ -318,7 +318,7 @@ const getAnswers = async (req, res) => {
   try {
     if (quids == undefined) {
       const student = await Student.findOne({ id: studentId });
-      let stQuiz = JSON.parse(student.quizAnswers);
+      let stQuiz = JSON.parse(student.quizAnswers)??{};
       console.log(stQuiz);
       if (id in stQuiz) {
         quids = Object.keys(stQuiz[id].answers);
@@ -516,6 +516,7 @@ const getQuizMarks = async (req, res) => {
 // };
 
 const destroyQuiz = async (req, res) => {
+  try{
   const { id } = req.params;
   const Quiz = await quizes.findOne({ id });
 
@@ -533,6 +534,13 @@ const destroyQuiz = async (req, res) => {
     throw customError({
       code: 500,
       message: "Failed to delete quiz",
+    });
+  }}
+  catch(err){
+    console.log(err);
+    throw customError({
+      code: 400,
+      message: "CError",
     });
   }
 };
