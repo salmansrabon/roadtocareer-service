@@ -91,7 +91,7 @@ const checkQuizDate = async (req, res) => {
           if (stQuiz[id].hasOwnProperty("submitted")) {
             if (stQuiz[id]["submitted"] == true) {
               return {
-                message: "Student already submitted the quiz",
+                message: "Student already submitted the quiz. Detail marks will be available after the end of the quiz",
                 state: 3,
                 quids: quids,
               };
@@ -110,7 +110,7 @@ const checkQuizDate = async (req, res) => {
 
             // console.log(JSON.parse(student.attendances));
             return {
-              message: "Student quiz time has been finished.",
+              message: "Student quiz time has been finished. Marks will be available after the end of the quiz.",
               state: 3,
               quids: quids,
             };
