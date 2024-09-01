@@ -40,6 +40,7 @@ const getPayment = async (req, res) => {
 };
 
 const getAllPayments = async (req, res) => {
+  try{
   let input = { ...req?.query };
   input.filterRef = null;
   let query = null;
@@ -67,23 +68,28 @@ const getAllPayments = async (req, res) => {
   }
   else if (input.isUnpaid === 'true') {
     query = `
-    SELECT s.id, s.courseId, s.package, s.batch, s.courseTitle, s.name, s.mobile, s.email, s.university, s.profession, COALESCE(p.updatedAt, '0001-01-01') AS updatedAt 
+    SELECT s.id as studentId, s.courseId, s.package, s.batch, s.courseTitle, s.name, s.mobile, s.email, s.university, s.profession, COALESCE(p.updatedAt, '0001-01-01') AS updatedAt 
     FROM students s 
-    LEFT JOIN payments p ON s.id = p.studentId AND p.courseId = s.courseId AND p.monthName = :monthName 
-    WHERE s.isEnrolled = 1`;
+    LEFT JOIN payments p ON s.id = p.studentId AND p.courseId = s.courseId`;
 
-  const replacements = { monthName: input.monthName }; // Object to hold parameter values
 
-  if (input.monthName && input.courseId) {
-    query += ` AND s.courseId = :courseId AND p.courseId IS NULL`;
-    replacements.courseId = input.courseId; // Add courseId to replacements object
+  if (input.monthName) {
+    query += ` AND p.monthName = '${input.monthName}'`;
+     // Add courseId to replacements object
   }
+  if(input.courseId){
+    query += ` AND p.monthName = '${input.monthName}' 
+    WHERE s.isEnrolled = 1 AND s.courseId = '${input.courseId}' AND p.courseId IS NULL`;
+  }
+ else{
+    query += ` WHERE s.isEnrolled = 1`;
+ }
+  
 
   console.log(query); // Log the generated query
 
   // Execute the query with Sequelize (assuming sequelize is the Sequelize instance)
   response = await sequelize.query(query, {
-    replacements: replacements,
     type: QueryTypes.SELECT
   });
 
@@ -99,6 +105,13 @@ const getAllPayments = async (req, res) => {
     message: "All payments fetched successfully",
     data: response,
   });
+}catch(error){
+  console.log(error);
+  throw customError({
+    code:404,
+    message:"CError"
+  })
+}
 };
 
 
@@ -169,23 +182,33 @@ const addPayment = async (req, res) => {
 };
 
 const editPayment = async (req, res) => {
-  const { id } = req.params;
+  console.log('heyy there');
+  const id  = req.params.paymentId;
+  console.log(id);
   const payment = await Payment.findOne({ id });
 
   if (isEmpty(payment)) {
     throw customError({
       code: 404,
       message: "Payment not found",
-    });
+    });cx
   }
-
+try{
   await Payment.update(id, req.body);
   const updatedPayment = await Payment.findOne({ id });
 
-  req.status(201).send({
+  res.status(201).send({
     message: "Payment updated successfully",
     data: updatedPayment,
   });
+}
+catch(err){
+  console.log(err);
+  throw customError({
+    code: 404,
+    message: "CF Error",
+  });
+}
 };
 
 const destroyPayment = async (req, res) => {
