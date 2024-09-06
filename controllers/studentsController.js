@@ -1,5 +1,6 @@
 const generator = require("generate-password");
 const bcrypt = require("bcryptjs");
+const { Op } = require('sequelize');
 const { isEmpty } = require("lodash");
 const { v4: uuidV4 } = require("uuid");
 const { signUp } = require("./userController");
@@ -250,14 +251,15 @@ const validateStudent = async (req, res) => {
 const disableAceess = async (req, res) => {
   try {
     const { studentIds } = req.body;
-    console.log(studentIds);
-    await Student.update(studentIds, { isValid: false })
+    // console.log(studentIds);
+    await Student.updateCondition({ id: studentIds, remark:{  [Op.notRegexp]: 'pay|Pay|Payment|payment'} }, { isValid: false })
       .then((result) => {
         res
           .status(201)
           .send({ message: "All of the unpaid students access rebooked successfully" });
       })
       .catch((err) => {
+        console.log(err);
         throw customError({
           code: 404,
           message: "Database error",

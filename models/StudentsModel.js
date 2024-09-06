@@ -189,6 +189,14 @@ const update = async (id, data) => {
   });
   return response;
 };
+const updateCondition = async (filters, data) => {
+  const response = await studentsSchema.update(data, {
+    where: {
+      ...filters
+    },
+  });
+  return response;
+};
 const destroy = async (filters) => {
   const response = await studentsSchema.destroy({
     where: {
@@ -202,5 +210,6 @@ module.exports = {
   findAll,
   create,
   update,
+  updateCondition,
   destroy,
 };
