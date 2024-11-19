@@ -25,7 +25,7 @@ const getAllStudents = async (req, res) => {
 
     // Fetch students based on the filters
     const students = await Student.findAll({ ...filters });
-    console.log(students);
+    // console.log(students);
 
     // Fetch payment details for each student
     const studentInstances = students.rows;
@@ -177,9 +177,9 @@ const validateStudent2 = async (req, res) => {
   const salt = await bcrypt.genSalt(10);
   const hashPassword = await bcrypt.hash(password, salt);
   await Student.update(studentId, { isValid });
-  console.log("i am updating pass");
+  // console.log("i am updating pass");
   await User.update(studentId, { password: hashPassword });
-  console.log("finding course");
+  // console.log("finding course");
   const course = await Course.findOne({ id: courseId });
   if (isEmpty(course)) {
     // throw customError({
@@ -250,7 +250,7 @@ const validateStudent = async (req, res) => {
 const disableAceess = async (req, res) => {
   try {
     const { studentIds } = req.body;
-    console.log(studentIds);
+    // console.log(studentIds);
     await Student.update(studentIds, { isValid: false })
       .then((result) => {
         res

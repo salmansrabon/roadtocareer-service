@@ -11,29 +11,29 @@ const { Sequelize, QueryTypes } = require("sequelize");
 const { DB, USER, PASSWORD, HOST, dialect, pool } = require("../config/db");
 
 //mailer config
-const transporter = createTransport({
-  host: nodemailerHost,
-  port: nodemailerPort,
-  secure: false,
-  secureConnection: false,
-  auth: {
-    user: nodemailerUser,
-    pass: nodemailerPassword
-
-  },
-  tls: {
-    rejectUnAuthorized: true
-  }
-});
-
-//mailer config
 // const transporter = createTransport({
-//   service: "gmail",
+//   host: nodemailerHost,
+//   port: nodemailerPort,
+//   secure: false,
+//   secureConnection: false,
 //   auth: {
 //     user: nodemailerUser,
-//     pass: nodemailerPassword,
+//     pass: nodemailerPassword
+
 //   },
+//   tls: {
+//     rejectUnAuthorized: true
+//   }
 // });
+
+//mailer config
+const transporter = createTransport({
+  service: "gmail",
+  auth: {
+    user: nodemailerUser,
+    pass: nodemailerPassword,
+  },
+});
 
 const mailOptions = (data) => {
   const { name, email, courseTitle, batch, type } = data;

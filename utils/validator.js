@@ -79,6 +79,7 @@ const paymentSchema = Joi.object({
   courseId: Joi.string().required(),
   installmentNo: Joi.number().required(),
   installmentAmount: Joi.number().required(),
+  payable:Joi.number().required(),
   discount: Joi.number(),
   paidAmount:Joi.number().required(),
   comment: Joi.string().allow(""),

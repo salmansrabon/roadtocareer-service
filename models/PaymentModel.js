@@ -42,6 +42,9 @@ const paymentSchema = sequelize.define("payment", {
   comment: {
     type: DataTypes.STRING,
   },
+  payable:{
+    type:DataTypes.INTEGER,
+  },
   monthName: {
     type: DataTypes.STRING,
     allowNull: false,
