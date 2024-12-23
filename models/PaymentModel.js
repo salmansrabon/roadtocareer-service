@@ -1,4 +1,5 @@
 const { sequelize, DataTypes } = require("../config");
+const { studentsSchema } = require("./StudentsModel");
 
 const paymentSchema = sequelize.define("payment", {
   id: {
@@ -60,14 +61,32 @@ const findOne = async (filters = {}, attributes = null) => {
 };
 
 const findAll = async (filters = {}, attributes = null, limit = null, page = 1, order = [['createdAt', 'DESC'], ['updatedAt', 'DESC']]) => {
+  // Define relationships between the `studentsSchema` and `paymentSchema` models
+  studentsSchema.hasMany(paymentSchema, { foreignKey: 'studentId', sourceKey: 'id' });
+  paymentSchema.belongsTo(studentsSchema, { foreignKey: 'studentId', targetKey: 'id' });
+
   const offset = limit ? (page - 1) * limit : null;
+
+  // Query to fetch payments with associated student email
   const response = await paymentSchema.findAndCountAll({
     where: { ...filters },
-    ...(attributes && { attributes }),
     ...(offset && { offset }),
     ...(limit && { limit }),
-    order:order
+    order,
+    attributes: {
+      include: [
+        // Add `students.email` as a top-level attribute named `studentEmail`
+        [sequelize.col('student.email'), 'studentEmail'],
+      ],
+    },
+    include: [
+      {
+        model: studentsSchema, // Include the related `studentsSchema` model
+        attributes: [], // Exclude all attributes from the `studentsSchema` to avoid nested results
+      },
+    ],
   });
+
   return response;
 };
 
